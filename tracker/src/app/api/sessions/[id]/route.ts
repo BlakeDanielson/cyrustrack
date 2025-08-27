@@ -2,14 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { databaseService } from '@/lib/database';
 import { CreateConsumptionSession } from '@/types/consumption';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 // GET /api/sessions/[id] - Get a specific session
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     
@@ -43,7 +37,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 // PUT /api/sessions/[id] - Update a specific session
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     
@@ -102,7 +96,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/sessions/[id] - Delete a specific session
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     

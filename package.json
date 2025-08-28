@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate --schema=src/generated/prisma/schema.prisma && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:push": "prisma db push --schema=src/generated/prisma/schema.prisma"
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@mapbox/search-js-react": "^1.3.0",

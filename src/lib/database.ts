@@ -1,6 +1,6 @@
 import { ConsumptionSession, CreateConsumptionSession, QuantityValue } from '@/types/consumption';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@/generated/prisma';
+import { Prisma } from '@prisma/client';
 
 // Convert Prisma model to our app type
 function convertPrismaToSession(prismaSession: Prisma.ConsumptionSessionGetPayload<object>): ConsumptionSession {

@@ -1,22 +1,22 @@
 import { ConsumptionSession, CreateConsumptionSession, ConsumptionFilters } from '@/types/consumption';
-import { databaseService } from './database';
+import hybridStorageService from './storage-hybrid';
 
 // Storage service that uses Firebase Firestore with localStorage fallback
 export const storageService = {
   // Get all sessions from Firestore with localStorage fallback
   getAll: async (): Promise<ConsumptionSession[]> => {
-    return await databaseService.getAll();
+    return await hybridStorageService.getAll();
   },
 
   // Create a new session
   create: async (session: CreateConsumptionSession): Promise<ConsumptionSession> => {
-    return await databaseService.create(session);
+    return await hybridStorageService.create(session);
   },
 
   // Get session by ID
   getById: async (id: string): Promise<ConsumptionSession | null> => {
     try {
-      const sessions = await databaseService.getAll();
+      const sessions = await hybridStorageService.getAll();
       return sessions.find(session => session.id === id) || null;
     } catch (error) {
       console.error('Failed to get session by ID:', error);
@@ -26,27 +26,27 @@ export const storageService = {
 
   // Update a session
   update: async (id: string, updates: Partial<CreateConsumptionSession>): Promise<ConsumptionSession | null> => {
-    return await databaseService.update(id, updates);
+    return await hybridStorageService.update(id, updates);
   },
 
   // Delete a session
   delete: async (id: string): Promise<boolean> => {
-    return await databaseService.delete(id);
+    return await hybridStorageService.delete(id);
   },
 
   // Get filtered sessions
   getFiltered: async (filters: ConsumptionFilters): Promise<ConsumptionSession[]> => {
-    return await databaseService.getFiltered(filters);
+    return await hybridStorageService.getFiltered(filters);
   },
 
   // Clear all data
   clear: async (): Promise<void> => {
-    return await databaseService.clear();
+    return await hybridStorageService.clear();
   },
 
   // Export data as JSON
   exportData: async (): Promise<string> => {
-    return await databaseService.exportData();
+    return await hybridStorageService.exportData();
   },
 
   // Import data from JSON
@@ -57,7 +57,7 @@ export const storageService = {
       // Use Firestore service directly for import
       const createPromises = sessions.map(session => {
         const { id, created_at, updated_at, ...sessionData } = session;
-        return databaseService.create(sessionData as CreateConsumptionSession);
+        return hybridStorageService.create(sessionData as CreateConsumptionSession);
       });
       
       await Promise.all(createPromises);

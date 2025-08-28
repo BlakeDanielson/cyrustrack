@@ -91,36 +91,34 @@ const Settings: React.FC = () => {
     updatePreferences({ [key]: value });
   };
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     try {
       // Dynamic import to avoid ESLint error
-      import('@/lib/storage').then(({ storageService }) => {
-        const data = storageService.exportData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cannabis-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        alert('Data exported successfully!');
-      });
+      const { storageService } = await import('@/lib/storage');
+      const data = await storageService.exportData();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cannabis-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('Data exported successfully!');
     } catch (error) {
       console.error('Failed to export data:', error);
       alert('Failed to export data.');
     }
   };
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
     if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
       try {
-        import('@/lib/storage').then(({ storageService }) => {
-          storageService.clear();
-          loadSessions(); // Refresh the store
-          alert('All data cleared successfully!');
-        });
+        const { storageService } = await import('@/lib/storage');
+        await storageService.clear();
+        loadSessions(); // Refresh the store
+        alert('All data cleared successfully!');
       } catch (error) {
         console.error('Failed to clear data:', error);
         alert('Failed to clear data.');

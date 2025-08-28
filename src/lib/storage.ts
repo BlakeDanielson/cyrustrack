@@ -1,9 +1,9 @@
 import { ConsumptionSession, CreateConsumptionSession, ConsumptionFilters } from '@/types/consumption';
 import hybridStorageService from './storage-hybrid';
 
-// Storage service that uses Firebase Firestore with localStorage fallback
+// Storage service that uses database API with localStorage fallback
 export const storageService = {
-  // Get all sessions from Firestore with localStorage fallback
+  // Get all sessions from database API with localStorage fallback
   getAll: async (): Promise<ConsumptionSession[]> => {
     return await hybridStorageService.getAll();
   },
@@ -54,7 +54,7 @@ export const storageService = {
     try {
       const sessions = JSON.parse(jsonData) as ConsumptionSession[];
       
-      // Use Firestore service directly for import
+      // Use hybrid storage service for import
       const createPromises = sessions.map(session => {
         const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...sessionData } = session;
       void _id; void _createdAt; void _updatedAt; // Explicitly ignore these properties
@@ -69,10 +69,10 @@ export const storageService = {
     }
   },
 
-  // Legacy migration remains no-op now that Firestore removed
+  // Migration to database (now handled by hybridStorageService)
   migrateFromLocalStorage: async (): Promise<boolean> => {
-    console.warn('Firestore is no longer used – migrateFromLocalStorage is deprecated');
-    return false;
+    console.log('Migration is now handled by the database migration API');
+    return await hybridStorageService.migrateToDatabase().then(result => result.success);
   }
 };
 

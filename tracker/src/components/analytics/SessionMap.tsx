@@ -247,7 +247,8 @@ const SessionMap: React.FC<SessionMapProps> = ({
             closeOnClick={false}
             className="session-popup"
           >
-            <div className="p-3 min-w-[250px]">
+            {/* Allow popup to fit narrow screens while keeping reasonable min width */}
+            <div className="p-3 min-w-[clamp(220px,40vw,280px)] max-w-[80vw] overflow-y-auto">
               <div className="flex items-start gap-3 mb-3">
                 <Cannabis className="h-5 w-5 text-green-600 mt-1" />
                 <div className="flex-1">

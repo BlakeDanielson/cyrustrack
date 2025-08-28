@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { Leaf, FlaskConical, Percent, Package } from 'lucide-react';
 import { ConsumptionSession } from '@/types/consumption';
-import { AnalyticsService } from '@/lib/analytics';
+// import { AnalyticsService } from '@/lib/analytics'; // Commented out as currently unused
 
 interface StrainAnalyticsProps {
   sessions: ConsumptionSession[];

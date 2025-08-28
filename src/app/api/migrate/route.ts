@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { databaseService } from '@/lib/database';
-import { storageService } from '@/lib/storage';
 import { CreateConsumptionSession } from '@/types/consumption';
 
 // POST /api/migrate - Migrate data from localStorage to database
@@ -33,7 +32,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Convert to CreateConsumptionSession format (remove id, created_at, updated_at)
-      const { id, created_at, updated_at, ...sessionData } = session;
+      const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...sessionData } = session;
+      void _id; void _createdAt; void _updatedAt; // Explicitly ignore these properties
       validSessions.push(sessionData as CreateConsumptionSession);
     }
 

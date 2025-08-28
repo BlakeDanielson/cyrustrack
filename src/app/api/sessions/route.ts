@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE /api/sessions - Clear all sessions (for admin/testing)
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     await databaseService.clear();
     return NextResponse.json({

@@ -158,8 +158,8 @@ export const hybridStorageService = {
   },
 
   // Import data (localStorage only - for migration)
-  importData: (jsonData: string): boolean => {
-    return storageService.importData(jsonData);
+  importData: async (jsonData: string): Promise<boolean> => {
+    return await storageService.importData(jsonData);
   },
 
   // Migrate localStorage data to database
@@ -201,7 +201,7 @@ export const hybridStorageService = {
         return data.database === 'connected';
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -222,7 +222,8 @@ export const hybridStorageService = {
       // Sync each local-only session to database
       for (const session of localOnlySessions) {
         try {
-          const { id, created_at, updated_at, ...sessionData } = session;
+          const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...sessionData } = session;
+          void _id; void _createdAt; void _updatedAt; // Explicitly ignore these properties
           await hybridStorageService.create(sessionData as CreateConsumptionSession);
           synced++;
         } catch (error) {

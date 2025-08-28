@@ -56,7 +56,8 @@ export const storageService = {
       
       // Use Firestore service directly for import
       const createPromises = sessions.map(session => {
-        const { id, created_at, updated_at, ...sessionData } = session;
+        const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...sessionData } = session;
+      void _id; void _createdAt; void _updatedAt; // Explicitly ignore these properties
         return hybridStorageService.create(sessionData as CreateConsumptionSession);
       });
       

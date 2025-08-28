@@ -213,7 +213,7 @@ const SessionMap: React.FC<SessionMapProps> = ({
         mapStyle={getMapStyle()}
         mapboxAccessToken={mapboxToken}
         attributionControl={false}
-        onError={(e) => setMapError('Failed to load map. Please check your internet connection and Mapbox token.')}
+        onError={() => setMapError('Failed to load map. Please check your internet connection and Mapbox token.')}
       >
         {sessionGroups.map((group, index) => (
           <Marker

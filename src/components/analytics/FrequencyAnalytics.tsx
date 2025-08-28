@@ -13,7 +13,7 @@ import {
   Line 
 } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Calendar, Clock } from 'lucide-react';
-import { AnalyticsService, FrequencyAnalytics } from '@/lib/analytics';
+import { AnalyticsService } from '@/lib/analytics';
 import { ConsumptionSession } from '@/types/consumption';
 import StreakHeatmap from './StreakHeatmap';
 

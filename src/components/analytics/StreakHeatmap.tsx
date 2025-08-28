@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { eachDayOfInterval, format, subWeeks, isSameDay } from 'date-fns';
+import { eachDayOfInterval, subWeeks, isSameDay } from 'date-fns';
 import { ConsumptionSession } from '@/types/consumption';
 
 interface StreakHeatmapProps {

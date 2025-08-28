@@ -247,7 +247,8 @@ export const firestoreService = {
       
       // Convert to CreateConsumptionSession format and add to Firestore
       const createPromises = sessions.map(session => {
-        const { id, created_at, updated_at, ...sessionData } = session;
+        const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...sessionData } = session;
+        void _id; void _createdAt; void _updatedAt; // Explicitly ignore these properties
         return firestoreService.create(sessionData as CreateConsumptionSession);
       });
       
@@ -301,7 +302,7 @@ export const hybridStorageService = {
   async getAll(): Promise<ConsumptionSession[]> {
     try {
       return await firestoreService.getAll();
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, falling back to localStorage');
       // Fallback to localStorage implementation
       if (typeof window === 'undefined') return [];
@@ -319,7 +320,7 @@ export const hybridStorageService = {
   async create(session: CreateConsumptionSession): Promise<ConsumptionSession> {
     try {
       return await firestoreService.create(session);
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, falling back to localStorage');
       // Fallback to localStorage implementation
       const id = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -344,7 +345,7 @@ export const hybridStorageService = {
   async update(id: string, updates: Partial<CreateConsumptionSession>): Promise<ConsumptionSession | null> {
     try {
       return await firestoreService.update(id, updates);
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, falling back to localStorage');
       // Fallback to localStorage implementation
       if (typeof window === 'undefined') return null;
@@ -370,7 +371,7 @@ export const hybridStorageService = {
   async delete(id: string): Promise<boolean> {
     try {
       return await firestoreService.delete(id);
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, falling back to localStorage');
       // Fallback to localStorage implementation
       if (typeof window === 'undefined') return false;
@@ -388,7 +389,7 @@ export const hybridStorageService = {
   async getFiltered(filters: ConsumptionFilters): Promise<ConsumptionSession[]> {
     try {
       return await firestoreService.getFiltered(filters);
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, using localStorage for filtering');
       // Fallback to client-side filtering
       let sessions = await this.getAll();
@@ -430,7 +431,7 @@ export const hybridStorageService = {
   async clear(): Promise<void> {
     try {
       await firestoreService.clear();
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, clearing localStorage');
       if (typeof window !== 'undefined') {
         localStorage.removeItem('cannabis-tracker-sessions');
@@ -441,7 +442,7 @@ export const hybridStorageService = {
   async exportData(): Promise<string> {
     try {
       return await firestoreService.exportData();
-    } catch (error) {
+    } catch {
       console.warn('Firestore unavailable, exporting from localStorage');
       const sessions = await this.getAll();
       return JSON.stringify(sessions, null, 2);

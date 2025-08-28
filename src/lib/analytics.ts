@@ -1,13 +1,10 @@
-import { ConsumptionSession, formatQuantity, QuantityValue, QuantityAnalytics } from '@/types/consumption';
+import { ConsumptionSession, QuantityAnalytics } from '@/types/consumption';
 import {
   startOfWeek,
   endOfWeek,
   startOfMonth,
   endOfMonth,
-  differenceInWeeks,
-  differenceInMonths,
   format,
-  parseISO,
   isWithinInterval,
   eachWeekOfInterval,
   eachMonthOfInterval

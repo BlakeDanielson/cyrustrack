@@ -3,28 +3,28 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma';
 
 // Convert Prisma model to our app type
-function convertPrismaToSession(prismaSession: any): ConsumptionSession {
+function convertPrismaToSession(prismaSession: Prisma.ConsumptionSessionGetPayload<object>): ConsumptionSession {
   return {
     id: prismaSession.id,
     date: prismaSession.date,
     time: prismaSession.time,
     location: prismaSession.location,
-    latitude: prismaSession.latitude,
-    longitude: prismaSession.longitude,
+    latitude: prismaSession.latitude ?? undefined,
+    longitude: prismaSession.longitude ?? undefined,
     who_with: prismaSession.who_with,
     vessel: prismaSession.vessel,
     accessory_used: prismaSession.accessory_used,
     my_vessel: prismaSession.my_vessel,
     my_substance: prismaSession.my_substance,
     strain_name: prismaSession.strain_name,
-    thc_percentage: prismaSession.thc_percentage,
+    thc_percentage: prismaSession.thc_percentage ?? undefined,
     purchased_legally: prismaSession.purchased_legally,
-    state_purchased: prismaSession.state_purchased,
+    state_purchased: prismaSession.state_purchased ?? undefined,
     tobacco: prismaSession.tobacco,
     kief: prismaSession.kief,
     concentrate: prismaSession.concentrate,
     quantity: JSON.parse(prismaSession.quantity) as QuantityValue,
-    quantity_legacy: prismaSession.quantity_legacy,
+    quantity_legacy: prismaSession.quantity_legacy ?? undefined,
     created_at: prismaSession.created_at.toISOString(),
     updated_at: prismaSession.updated_at.toISOString(),
   };

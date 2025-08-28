@@ -13,7 +13,7 @@ export const autoMigration = {
       }
 
       // Check if there's localStorage data to migrate
-      const localSessions = storageService.getAll();
+      const localSessions = await storageService.getAll();
       if (localSessions.length === 0) {
         return { migrated: 0, skipped: true };
       }

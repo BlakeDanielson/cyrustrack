@@ -165,7 +165,7 @@ export const hybridStorageService = {
   // Migrate localStorage data to database
   migrateToDatabase: async (): Promise<{ success: boolean; migrated?: number; error?: string }> => {
     try {
-      const localSessions = storageService.getAll();
+      const localSessions = await storageService.getAll();
       
       if (localSessions.length === 0) {
         return { success: true, migrated: 0 };
@@ -212,7 +212,7 @@ export const hybridStorageService = {
     let synced = 0;
 
     try {
-      const localSessions = storageService.getAll();
+      const localSessions = await storageService.getAll();
       const dbSessions = await hybridStorageService.getAll();
       
       // Find sessions that exist locally but not in database

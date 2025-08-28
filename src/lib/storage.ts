@@ -1,22 +1,22 @@
 import { ConsumptionSession, CreateConsumptionSession, ConsumptionFilters } from '@/types/consumption';
-import { hybridStorageService, firestoreService } from './firestore';
+import { databaseService } from './database';
 
 // Storage service that uses Firebase Firestore with localStorage fallback
 export const storageService = {
   // Get all sessions from Firestore with localStorage fallback
   getAll: async (): Promise<ConsumptionSession[]> => {
-    return await hybridStorageService.getAll();
+    return await databaseService.getAll();
   },
 
   // Create a new session
   create: async (session: CreateConsumptionSession): Promise<ConsumptionSession> => {
-    return await hybridStorageService.create(session);
+    return await databaseService.create(session);
   },
 
   // Get session by ID
   getById: async (id: string): Promise<ConsumptionSession | null> => {
     try {
-      const sessions = await hybridStorageService.getAll();
+      const sessions = await databaseService.getAll();
       return sessions.find(session => session.id === id) || null;
     } catch (error) {
       console.error('Failed to get session by ID:', error);
@@ -26,27 +26,27 @@ export const storageService = {
 
   // Update a session
   update: async (id: string, updates: Partial<CreateConsumptionSession>): Promise<ConsumptionSession | null> => {
-    return await hybridStorageService.update(id, updates);
+    return await databaseService.update(id, updates);
   },
 
   // Delete a session
   delete: async (id: string): Promise<boolean> => {
-    return await hybridStorageService.delete(id);
+    return await databaseService.delete(id);
   },
 
   // Get filtered sessions
   getFiltered: async (filters: ConsumptionFilters): Promise<ConsumptionSession[]> => {
-    return await hybridStorageService.getFiltered(filters);
+    return await databaseService.getFiltered(filters);
   },
 
   // Clear all data
   clear: async (): Promise<void> => {
-    return await hybridStorageService.clear();
+    return await databaseService.clear();
   },
 
   // Export data as JSON
   exportData: async (): Promise<string> => {
-    return await hybridStorageService.exportData();
+    return await databaseService.exportData();
   },
 
   // Import data from JSON
@@ -57,7 +57,7 @@ export const storageService = {
       // Use Firestore service directly for import
       const createPromises = sessions.map(session => {
         const { id, created_at, updated_at, ...sessionData } = session;
-        return hybridStorageService.create(sessionData as CreateConsumptionSession);
+        return databaseService.create(sessionData as CreateConsumptionSession);
       });
       
       await Promise.all(createPromises);
@@ -68,9 +68,10 @@ export const storageService = {
     }
   },
 
-  // Migration utilities
+  // Legacy migration remains no-op now that Firestore removed
   migrateFromLocalStorage: async (): Promise<boolean> => {
-    return await firestoreService.migrateFromLocalStorage();
+    console.warn('Firestore is no longer used – migrateFromLocalStorage is deprecated');
+    return false;
   }
 };
 

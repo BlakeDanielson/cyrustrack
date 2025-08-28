@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd tracker && npm run build",
+  "outputDirectory": "tracker/.next",
+  "installCommand": "cd tracker && npm install",
+  "framework": "nextjs",
+  "functions": {
+    "tracker/src/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}

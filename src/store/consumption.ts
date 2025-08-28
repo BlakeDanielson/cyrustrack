@@ -7,7 +7,7 @@ import {
   AppState,
   ConsumptionFormData
 } from '@/types/consumption';
-import { hybridStorageService } from '@/lib/storage-hybrid';
+import { storageService } from '@/lib/storage';
 
 interface ConsumptionStore extends AppState {
   // Actions for consumption sessions
@@ -68,7 +68,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         addSession: async (session: CreateConsumptionSession) => {
           set({ isSaving: true });
           try {
-            const newSession = await hybridStorageService.create(session);
+            const newSession = await storageService.create(session);
             set((state) => ({
               sessions: [newSession, ...state.sessions],
               isSaving: false,
@@ -84,7 +84,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         updateSession: async (id: string, updates: Partial<CreateConsumptionSession>) => {
           set({ isSaving: true });
           try {
-            const updatedSession = await hybridStorageService.update(id, updates);
+            const updatedSession = await storageService.update(id, updates);
             if (updatedSession) {
               set((state) => ({
                 sessions: state.sessions.map((session) =>
@@ -103,7 +103,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         deleteSession: async (id: string) => {
           set({ isLoading: true });
           try {
-            const success = await hybridStorageService.delete(id);
+            const success = await storageService.delete(id);
             if (success) {
               set((state) => ({
                 sessions: state.sessions.filter((session) => session.id !== id),
@@ -120,7 +120,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         loadSessions: async () => {
           set({ isLoading: true });
           try {
-            const sessions = await hybridStorageService.getAll();
+            const sessions = await storageService.getAll();
             set({ sessions, isLoading: false });
           } catch (error) {
             console.error('Failed to load sessions:', error);
@@ -133,7 +133,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           set({ isLoading: true });
           try {
             const currentFilters = filters || get().filters;
-            const sessions = await hybridStorageService.getFiltered(currentFilters);
+            const sessions = await storageService.getFiltered(currentFilters);
             set({ sessions, isLoading: false });
           } catch (error) {
             console.error('Failed to load filtered sessions:', error);

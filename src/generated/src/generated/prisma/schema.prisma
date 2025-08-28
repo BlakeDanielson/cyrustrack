@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ConsumptionSession {
+  id String @id @default(cuid())
+
+  // Core Fields
+  date              String
+  time              String
+  location          String
+  latitude          Float?
+  longitude         Float?
+  who_with          String
+  vessel            String
+  accessory_used    String
+  my_vessel         Boolean @default(true)
+  my_substance      Boolean @default(true)
+  strain_name       String
+  thc_percentage    Float?
+  purchased_legally Boolean @default(true)
+  state_purchased   String?
+  tobacco           Boolean @default(false)
+  kief              Boolean @default(false)
+  concentrate       Boolean @default(false)
+
+  // Quantity system - stored as JSON for flexibility
+  // Contains: { amount: number, unit: string, type: string }
+  quantity String // JSON string
+
+  // Legacy support - for data migration
+  quantity_legacy Float?
+
+  // Metadata
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("consumption_sessions")
+}

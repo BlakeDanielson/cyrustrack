@@ -1,16 +1,87 @@
-import { ConsumptionSession, CreateConsumptionSession } from '@/types/consumption';
-import { v4 as uuidv4 } from 'uuid';
+import { ConsumptionSession, CreateConsumptionSession, ConsumptionFilters } from '@/types/consumption';
+import { hybridStorageService, firestoreService } from './firestore';
 
-const STORAGE_KEY = 'cannabis-tracker-sessions';
-
-// Client-side storage service using localStorage
+// Storage service that uses Firebase Firestore with localStorage fallback
 export const storageService = {
-  // Get all sessions from localStorage
+  // Get all sessions from Firestore with localStorage fallback
+  getAll: async (): Promise<ConsumptionSession[]> => {
+    return await hybridStorageService.getAll();
+  },
+
+  // Create a new session
+  create: async (session: CreateConsumptionSession): Promise<ConsumptionSession> => {
+    return await hybridStorageService.create(session);
+  },
+
+  // Get session by ID
+  getById: async (id: string): Promise<ConsumptionSession | null> => {
+    try {
+      const sessions = await hybridStorageService.getAll();
+      return sessions.find(session => session.id === id) || null;
+    } catch (error) {
+      console.error('Failed to get session by ID:', error);
+      return null;
+    }
+  },
+
+  // Update a session
+  update: async (id: string, updates: Partial<CreateConsumptionSession>): Promise<ConsumptionSession | null> => {
+    return await hybridStorageService.update(id, updates);
+  },
+
+  // Delete a session
+  delete: async (id: string): Promise<boolean> => {
+    return await hybridStorageService.delete(id);
+  },
+
+  // Get filtered sessions
+  getFiltered: async (filters: ConsumptionFilters): Promise<ConsumptionSession[]> => {
+    return await hybridStorageService.getFiltered(filters);
+  },
+
+  // Clear all data
+  clear: async (): Promise<void> => {
+    return await hybridStorageService.clear();
+  },
+
+  // Export data as JSON
+  exportData: async (): Promise<string> => {
+    return await hybridStorageService.exportData();
+  },
+
+  // Import data from JSON
+  importData: async (jsonData: string): Promise<boolean> => {
+    try {
+      const sessions = JSON.parse(jsonData) as ConsumptionSession[];
+      
+      // Use Firestore service directly for import
+      const createPromises = sessions.map(session => {
+        const { id, created_at, updated_at, ...sessionData } = session;
+        return hybridStorageService.create(sessionData as CreateConsumptionSession);
+      });
+      
+      await Promise.all(createPromises);
+      return true;
+    } catch (error) {
+      console.error('Failed to import data:', error);
+      return false;
+    }
+  },
+
+  // Migration utilities
+  migrateFromLocalStorage: async (): Promise<boolean> => {
+    return await firestoreService.migrateFromLocalStorage();
+  }
+};
+
+// Legacy synchronous methods for backward compatibility (will be deprecated)
+export const legacyStorageService = {
+  // Get all sessions from localStorage (synchronous fallback)
   getAll: (): ConsumptionSession[] => {
     if (typeof window === 'undefined') return [];
     
     try {
-      const data = localStorage.getItem(STORAGE_KEY);
+      const data = localStorage.getItem('cannabis-tracker-sessions');
       return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Failed to load sessions from localStorage:', error);
@@ -23,131 +94,9 @@ export const storageService = {
     if (typeof window === 'undefined') return;
     
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      localStorage.setItem('cannabis-tracker-sessions', JSON.stringify(sessions));
     } catch (error) {
       console.error('Failed to save sessions to localStorage:', error);
-    }
-  },
-
-  // Create a new session
-  create: (session: CreateConsumptionSession): ConsumptionSession => {
-    const id = uuidv4();
-    const now = new Date().toISOString();
-    const newSession: ConsumptionSession = {
-      id,
-      ...session,
-      created_at: now,
-      updated_at: now
-    };
-
-    const sessions = storageService.getAll();
-    sessions.unshift(newSession); // Add to beginning for chronological order
-    storageService.saveAll(sessions);
-    
-    return newSession;
-  },
-
-  // Get session by ID
-  getById: (id: string): ConsumptionSession | null => {
-    const sessions = storageService.getAll();
-    return sessions.find(session => session.id === id) || null;
-  },
-
-  // Update a session
-  update: (id: string, updates: Partial<CreateConsumptionSession>): ConsumptionSession | null => {
-    const sessions = storageService.getAll();
-    const sessionIndex = sessions.findIndex(session => session.id === id);
-    
-    if (sessionIndex === -1) return null;
-    
-    const updatedSession = {
-      ...sessions[sessionIndex],
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-    
-    sessions[sessionIndex] = updatedSession;
-    storageService.saveAll(sessions);
-    
-    return updatedSession;
-  },
-
-  // Delete a session
-  delete: (id: string): boolean => {
-    const sessions = storageService.getAll();
-    const filteredSessions = sessions.filter(session => session.id !== id);
-    
-    if (filteredSessions.length === sessions.length) return false;
-    
-    storageService.saveAll(filteredSessions);
-    return true;
-  },
-
-  // Get filtered sessions
-  getFiltered: (filters: {
-    startDate?: string;
-    endDate?: string;
-    strainName?: string;
-    location?: string;
-    vessel?: string;
-    limit?: number;
-  }): ConsumptionSession[] => {
-    let sessions = storageService.getAll();
-
-    if (filters.startDate) {
-      sessions = sessions.filter(session => session.date >= filters.startDate!);
-    }
-
-    if (filters.endDate) {
-      sessions = sessions.filter(session => session.date <= filters.endDate!);
-    }
-
-    if (filters.strainName) {
-      sessions = sessions.filter(session =>
-        session.strain_name.toLowerCase().includes(filters.strainName!.toLowerCase())
-      );
-    }
-
-    if (filters.location) {
-      sessions = sessions.filter(session =>
-        session.location.toLowerCase().includes(filters.location!.toLowerCase())
-      );
-    }
-
-    if (filters.vessel) {
-      sessions = sessions.filter(session =>
-        session.vessel.toLowerCase().includes(filters.vessel!.toLowerCase())
-      );
-    }
-
-    if (filters.limit) {
-      sessions = sessions.slice(0, filters.limit);
-    }
-
-    return sessions;
-  },
-
-  // Clear all data
-  clear: (): void => {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(STORAGE_KEY);
-  },
-
-  // Export data as JSON
-  exportData: (): string => {
-    const sessions = storageService.getAll();
-    return JSON.stringify(sessions, null, 2);
-  },
-
-  // Import data from JSON
-  importData: (jsonData: string): boolean => {
-    try {
-      const sessions = JSON.parse(jsonData) as ConsumptionSession[];
-      storageService.saveAll(sessions);
-      return true;
-    } catch (error) {
-      console.error('Failed to import data:', error);
-      return false;
     }
   }
 };

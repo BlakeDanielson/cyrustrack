@@ -215,7 +215,7 @@ const LocationAnalytics: React.FC<LocationAnalyticsProps> = ({ sessions }) => {
                   outerRadius={80}
                   dataKey="sessions"
                   label={({ location, sessions, percent }) => 
-                    `${location}: ${sessions} (${(percent * 100).toFixed(0)}%)`
+                    `${location}: ${sessions} (${percent ? (percent * 100).toFixed(0) : '0'}%)`
                   }
                   labelLine={false}
                   fontSize={10}

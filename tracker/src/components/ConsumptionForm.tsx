@@ -33,7 +33,7 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
 }) => {
   const config = getQuantityConfig(vessel);
 
-  if (config.type === 'size_category') {
+  if (config.type === 'size_category' && 'options' in config) {
     return (
       <select
         required={required}
@@ -54,10 +54,10 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
   return (
     <input
       type="number"
-      step={config.step}
+      step={'step' in config ? config.step : 0.1}
       min="0"
       required={required}
-      placeholder={config.placeholder}
+      placeholder={'placeholder' in config ? config.placeholder : '0'}
       value={value as number}
       onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -112,8 +112,8 @@ const ConsumptionForm: React.FC = () => {
       if (field === 'vessel') {
         const newConfig = getQuantityConfig(value as VesselType);
         newData.quantity = newConfig.type === 'decimal'
-          ? parseFloat(newConfig.placeholder)
-          : (newConfig.options ? newConfig.options[0] : 0);
+          ? ('placeholder' in newConfig ? parseFloat(newConfig.placeholder) : 0)
+          : ('options' in newConfig && newConfig.options ? newConfig.options[0] : 0);
       }
 
       return newData;
@@ -127,7 +127,7 @@ const ConsumptionForm: React.FC = () => {
       // Convert form data to session data with proper quantity format
       const sessionData = {
         ...formData,
-        quantity: createQuantityValue(formData.vessel, formData.quantity)
+        quantity: createQuantityValue(formData.vessel as VesselType, formData.quantity)
       };
 
       await addSession(sessionData);
@@ -490,13 +490,13 @@ const ConsumptionForm: React.FC = () => {
             Quantity *
           </label>
           <QuantityInput
-            vessel={formData.vessel}
+            vessel={formData.vessel as VesselType}
             value={formData.quantity}
             onChange={(value) => handleInputChange('quantity', value)}
             required
           />
           <p className="text-xs text-gray-500 mt-1">
-            {getQuantityConfig(formData.vessel).unit}
+            {getQuantityConfig(formData.vessel as VesselType).unit}
           </p>
         </div>
 

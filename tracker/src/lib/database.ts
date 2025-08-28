@@ -173,22 +173,19 @@ export const databaseService = {
       // Text filters (case-insensitive partial matches)
       if (filters.strainName) {
         where.strain_name = {
-          contains: filters.strainName,
-          mode: 'insensitive'
+          contains: filters.strainName
         };
       }
 
       if (filters.location) {
         where.location = {
-          contains: filters.location,
-          mode: 'insensitive'
+          contains: filters.location
         };
       }
 
       if (filters.vessel) {
         where.vessel = {
-          contains: filters.vessel,
-          mode: 'insensitive'
+          contains: filters.vessel
         };
       }
 
@@ -233,8 +230,7 @@ export const databaseService = {
     try {
       const prismaInputs = sessions.map(convertSessionToPrismaInput);
       const result = await prisma.consumptionSession.createMany({
-        data: prismaInputs,
-        skipDuplicates: true
+        data: prismaInputs
       });
       return result.count;
     } catch (error) {

@@ -3,9 +3,9 @@ import { databaseService } from '@/lib/database';
 import { CreateConsumptionSession } from '@/types/consumption';
 
 // GET /api/sessions/[id] - Get a specific session
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       success: true
     });
   } catch (error) {
-    console.error(`GET /api/sessions/${params.id} error:`, error);
+    console.error('GET /api/sessions/[id] error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch session', success: false },
       { status: 500 }
@@ -37,9 +37,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/sessions/[id] - Update a specific session
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       success: true
     });
   } catch (error) {
-    console.error(`PUT /api/sessions/${params.id} error:`, error);
+    console.error('PUT /api/sessions/[id] error:', error);
     return NextResponse.json(
       { error: 'Failed to update session', success: false },
       { status: 500 }
@@ -96,9 +96,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/sessions/[id] - Delete a specific session
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(
@@ -121,7 +121,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       success: true
     });
   } catch (error) {
-    console.error(`DELETE /api/sessions/${params.id} error:`, error);
+    console.error('DELETE /api/sessions/[id] error:', error);
     return NextResponse.json(
       { error: 'Failed to delete session', success: false },
       { status: 500 }

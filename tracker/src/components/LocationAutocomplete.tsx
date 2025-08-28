@@ -35,7 +35,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLUListElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get Mapbox access token from environment variables
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;

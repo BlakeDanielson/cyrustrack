@@ -1,4 +1,4 @@
-import { ConsumptionSession } from '@/types/consumption';
+import { ConsumptionSession, createQuantityValue } from '@/types/consumption';
 import { v4 as uuidv4 } from 'uuid';
 
 // Sample sessions with realistic coordinates for major US cities
@@ -22,7 +22,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: false,
     concentrate: false,
-    quantity: 1,
+    quantity: createQuantityValue('Joint', 0.25),
     created_at: new Date('2024-01-15T19:30:00').toISOString(),
     updated_at: new Date('2024-01-15T19:30:00').toISOString()
   },
@@ -45,7 +45,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: true,
     concentrate: false,
-    quantity: 0.5,
+    quantity: createQuantityValue('Bong', 'small'),
     created_at: new Date('2024-01-16T21:00:00').toISOString(),
     updated_at: new Date('2024-01-16T21:00:00').toISOString()
   },
@@ -68,7 +68,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: false,
     concentrate: true,
-    quantity: 0.2,
+    quantity: createQuantityValue('Vape Pen', 5),
     created_at: new Date('2024-01-18T16:45:00').toISOString(),
     updated_at: new Date('2024-01-18T16:45:00').toISOString()
   },
@@ -91,7 +91,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: false,
     concentrate: true,
-    quantity: 0.1,
+    quantity: createQuantityValue('Dab Rig', 0.1),
     created_at: new Date('2024-01-20T20:15:00').toISOString(),
     updated_at: new Date('2024-01-20T20:15:00').toISOString()
   },
@@ -114,7 +114,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: false,
     concentrate: false,
-    quantity: 1.5,
+    quantity: createQuantityValue('Joint', 0.5),
     created_at: new Date('2024-01-22T18:30:00').toISOString(),
     updated_at: new Date('2024-01-22T18:30:00').toISOString()
   },
@@ -137,7 +137,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: true,
     concentrate: false,
-    quantity: 0.8,
+    quantity: createQuantityValue('Pipe', 'medium'),
     created_at: new Date('2024-01-25T22:00:00').toISOString(),
     updated_at: new Date('2024-01-25T22:00:00').toISOString()
   },
@@ -160,7 +160,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: true,
     kief: false,
     concentrate: false,
-    quantity: 2,
+    quantity: createQuantityValue('Blunt', 0.75),
     created_at: new Date('2024-01-28T17:20:00').toISOString(),
     updated_at: new Date('2024-01-28T17:20:00').toISOString()
   },
@@ -183,7 +183,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: false,
     kief: false,
     concentrate: false,
-    quantity: 10, // mg
+    quantity: createQuantityValue('Edibles', 10),
     created_at: new Date('2024-02-02T19:45:00').toISOString(),
     updated_at: new Date('2024-02-02T19:45:00').toISOString()
   }

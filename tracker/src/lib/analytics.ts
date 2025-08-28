@@ -1,4 +1,4 @@
-import { ConsumptionSession, formatQuantity, QuantityValue } from '@/types/consumption';
+import { ConsumptionSession, formatQuantity, QuantityValue, QuantityAnalytics } from '@/types/consumption';
 import {
   startOfWeek,
   endOfWeek,

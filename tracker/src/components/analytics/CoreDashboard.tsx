@@ -27,7 +27,7 @@ const CoreAnalyticsDashboard: React.FC<CoreDashboardProps> = ({ sessions }) => {
 
     // Total quantity consumed (sum of normalized quantities)
     const quantityAnalytics = AnalyticsService.calculateQuantityAnalytics(sessions);
-    const totalQuantityConsumed = Object.values(quantityAnalytics.totalQuantityByVessel).reduce(
+    const totalQuantityConsumed = (Object.values(quantityAnalytics.totalQuantityByVessel) as number[]).reduce(
       (sum, v) => sum + v,
       0
     );

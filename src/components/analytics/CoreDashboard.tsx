@@ -204,7 +204,7 @@ const CoreAnalyticsDashboard: React.FC<CoreDashboardProps> = ({ sessions }) => {
   return (
     <div className="space-y-6">
       {/* Summary Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {enhancedCards.slice(0, 4).map((card) => {
           const Icon = card.icon;
           const TrendIcon = card.trend === 'up' ? TrendingUp : card.trend === 'down' ? TrendingDown : null;
@@ -237,7 +237,7 @@ const CoreAnalyticsDashboard: React.FC<CoreDashboardProps> = ({ sessions }) => {
       </div>
 
       {/* Secondary Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {enhancedCards.slice(4).map((card) => {
           const Icon = card.icon;
 
@@ -269,7 +269,7 @@ const CoreAnalyticsDashboard: React.FC<CoreDashboardProps> = ({ sessions }) => {
           <Calendar className="h-5 w-5 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="text-center">
             <p className="text-sm text-gray-600">Last 7 Days</p>
             <p className="text-2xl font-bold text-blue-700">{metrics.last7DaysSessions}</p>

@@ -97,7 +97,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
   return (
     <div className="space-y-6">
       {/* Overview cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
           <Leaf className="h-6 w-6 text-green-600" />
           <div>
@@ -131,7 +131,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
       {/* Top Strains Bar Chart */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Consumed Strains (Top 10)</h3>
-        <div className="h-72">
+        <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={topStrains} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" />
@@ -147,7 +147,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
       {/* Product Modifier Pie Chart */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Modifier Usage</h3>
-        <div className="h-72">
+        <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -177,7 +177,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
       {/* Indica/Sativa/Hybrid Ratio */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Indica/Sativa/Hybrid Ratio</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-green-50 rounded-lg p-4 text-center">
             <p className="text-sm text-gray-600 mb-1">Indica</p>
             <p className="text-2xl font-bold text-green-700">{ratio.indica}%</p>

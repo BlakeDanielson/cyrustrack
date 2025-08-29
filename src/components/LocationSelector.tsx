@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Search, Clock, Star, Users } from 'lucide-react';
+import { Plus, Search, Clock, Star, Users } from 'lucide-react';
 import LocationAutocomplete from './LocationAutocomplete';
 import InteractiveLocationMap from './InteractiveLocationMap';
 

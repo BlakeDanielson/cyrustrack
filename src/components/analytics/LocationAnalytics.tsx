@@ -93,7 +93,7 @@ const LocationAnalytics: React.FC<LocationAnalyticsProps> = ({ sessions }) => {
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -176,7 +176,7 @@ const LocationAnalytics: React.FC<LocationAnalyticsProps> = ({ sessions }) => {
         {/* Bar Chart - Top Locations */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Consumption Locations</h3>
-          <div className="h-64">
+          <div className="h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={locationData.sortedLocations.slice(0, 8)}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -205,7 +205,7 @@ const LocationAnalytics: React.FC<LocationAnalyticsProps> = ({ sessions }) => {
         {/* Pie Chart - Location Distribution */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Distribution</h3>
-          <div className="h-64">
+          <div className="h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -237,7 +237,7 @@ const LocationAnalytics: React.FC<LocationAnalyticsProps> = ({ sessions }) => {
       {/* Location Details Table */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Details</h3>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-6 sm:mx-0 sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

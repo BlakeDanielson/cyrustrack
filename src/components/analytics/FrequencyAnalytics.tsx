@@ -79,7 +79,7 @@ const FrequencyAnalyticsComponent: React.FC<FrequencyAnalyticsProps> = ({ sessio
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -144,7 +144,7 @@ const FrequencyAnalyticsComponent: React.FC<FrequencyAnalyticsProps> = ({ sessio
       </div>
 
       {/* Current vs Last Period Comparison */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Comparison</h3>
           <div className="space-y-4">
@@ -209,7 +209,7 @@ const FrequencyAnalyticsComponent: React.FC<FrequencyAnalyticsProps> = ({ sessio
       {/* Weekly Trend Chart */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Sessions Per Week (Last 12 Weeks)</h3>
-        <div className="h-64">
+        <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={weeklyTrendData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -238,7 +238,7 @@ const FrequencyAnalyticsComponent: React.FC<FrequencyAnalyticsProps> = ({ sessio
       {/* Monthly Trend Chart */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Sessions Per Month (Last 12 Months)</h3>
-        <div className="h-64">
+        <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={monthlyTrendData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -270,7 +270,7 @@ const FrequencyAnalyticsComponent: React.FC<FrequencyAnalyticsProps> = ({ sessio
       {/* Streaks and Gaps Analysis */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Streaks & Patterns</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="text-center">
             <p className="text-2xl font-bold text-green-600">{streaksData.currentStreak}</p>
             <p className="text-sm text-gray-600">Current Streak (days)</p>

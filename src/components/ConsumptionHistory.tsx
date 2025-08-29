@@ -54,7 +54,7 @@ const ConsumptionHistory: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
         </div>
@@ -63,7 +63,7 @@ const ConsumptionHistory: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-6">
         <History className="h-6 w-6 text-green-600" />
         <h1 className="text-2xl font-bold text-gray-900">Consumption History</h1>

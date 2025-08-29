@@ -20,7 +20,7 @@ const Analytics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'core' | 'frequency' | 'location' | 'strain'>('core');
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="h-6 w-6 text-green-600" />
         <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
@@ -30,51 +30,102 @@ const Analytics: React.FC = () => {
       </div>
       
       {/* Analytics Tabs */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab('core')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'core'
-              ? 'bg-white text-green-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <BarChart3 className="h-4 w-4" />
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('frequency')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'frequency'
-              ? 'bg-white text-green-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Clock className="h-4 w-4" />
-          Frequency
-        </button>
-        <button
-          onClick={() => setActiveTab('location')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'location'
-              ? 'bg-white text-green-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <MapPin className="h-4 w-4" />
-          Locations
-        </button>
-        <button
-          onClick={() => setActiveTab('strain')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'strain'
-              ? 'bg-white text-green-700 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Leaf className="h-4 w-4" />
-          Strains
-        </button>
+      <div className="mb-6">
+        {/* Desktop tabs */}
+        <div className="hidden sm:flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setActiveTab('core')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'core'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <BarChart3 className="h-4 w-4" />
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('frequency')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'frequency'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Clock className="h-4 w-4" />
+            Frequency
+          </button>
+          <button
+            onClick={() => setActiveTab('location')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'location'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <MapPin className="h-4 w-4" />
+            Locations
+          </button>
+          <button
+            onClick={() => setActiveTab('strain')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'strain'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Leaf className="h-4 w-4" />
+            Strains
+          </button>
+        </div>
+
+        {/* Mobile tabs - 2x2 grid */}
+        <div className="grid grid-cols-2 gap-2 sm:hidden">
+          <button
+            onClick={() => setActiveTab('core')}
+            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+              activeTab === 'core'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <BarChart3 className="h-4 w-4" />
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('frequency')}
+            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+              activeTab === 'frequency'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <Clock className="h-4 w-4" />
+            Frequency
+          </button>
+          <button
+            onClick={() => setActiveTab('location')}
+            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+              activeTab === 'location'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <MapPin className="h-4 w-4" />
+            Locations
+          </button>
+          <button
+            onClick={() => setActiveTab('strain')}
+            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+              activeTab === 'strain'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <Leaf className="h-4 w-4" />
+            Strains
+          </button>
+        </div>
       </div>
       
       {/* Analytics Content */}
@@ -135,7 +186,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-6">
         <SettingsIcon className="h-6 w-6 text-green-600" />
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
@@ -196,10 +247,10 @@ const Settings: React.FC = () => {
               Your data is stored in a local database with automatic backup to localStorage for privacy and security.
             </p>
             <div className="space-y-3">
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button 
                   onClick={() => setShowImportDialog(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
                 >
                   <Upload className="w-4 h-4" />
                   Import CSV Data

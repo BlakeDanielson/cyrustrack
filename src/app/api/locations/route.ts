@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getLocationSuggestions, getFavoriteLocations, toggleLocationFavorite } from '@/lib/locationMigration';
+import { getFavoriteLocations, toggleLocationFavorite } from '@/lib/locationMigration';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {

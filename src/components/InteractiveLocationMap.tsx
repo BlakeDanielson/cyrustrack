@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactMap, { Marker, NavigationControl } from 'react-map-gl/mapbox-legacy';
+import ReactMap, { Marker, NavigationControl, ViewStateChangeEvent } from 'react-map-gl/mapbox-legacy';
 import { MapPin, Eye, EyeOff } from 'lucide-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -53,7 +53,7 @@ const InteractiveLocationMap: React.FC<InteractiveLocationMapProps> = ({
   }, [latitude, longitude]);
 
   // Handle marker drag end
-  const handleMarkerDragEnd = useCallback((event: any) => {
+  const handleMarkerDragEnd = useCallback((event: { lngLat: { lat: number; lng: number } }) => {
     const newLat = event.lngLat.lat;
     const newLng = event.lngLat.lng;
     
@@ -69,7 +69,7 @@ const InteractiveLocationMap: React.FC<InteractiveLocationMapProps> = ({
   }, [onLocationChange]);
 
   // Handle map click to move marker
-  const handleMapClick = useCallback((event: any) => {
+  const handleMapClick = useCallback((event: { lngLat: { lat: number; lng: number } }) => {
     const newLat = event.lngLat.lat;
     const newLng = event.lngLat.lng;
     
@@ -128,7 +128,7 @@ const InteractiveLocationMap: React.FC<InteractiveLocationMapProps> = ({
         >
           <ReactMap
             {...viewState}
-            onViewportChange={(viewport) => setViewState(viewport)}
+            onMove={(evt: ViewStateChangeEvent) => setViewState(evt.viewState)}
             onLoad={() => setMapLoaded(true)}
             onClick={handleMapClick}
             mapboxAccessToken={accessToken}

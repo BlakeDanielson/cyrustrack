@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Save, Search, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { MapPin, Save, Search, ChevronDown, ChevronUp, RefreshCw, Edit2, Check, X } from 'lucide-react';
 import { reverseGeocodeCached } from '@/lib/geocoding';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -217,7 +217,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Location Management</h2>
         <p className="text-sm text-gray-600">
-          View and edit your consumption locations. Click location names to rename them, drag pins on the map to update coordinates.
+          View and edit your consumption locations. Use the edit button to rename locations, drag pins on the map to update coordinates.
         </p>
       </div>
 
@@ -254,7 +254,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
             All Locations ({filteredLocations.length})
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Click location names to rename. Click to expand details and edit coordinates.
+            Use the edit button to rename locations. Tap to expand details and edit coordinates.
           </p>
         </div>
         
@@ -296,55 +296,58 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                   setTempName('');
                                 }
                               }}
-                              onBlur={() => {
-                                if (tempName.trim() && tempName !== location.name) {
-                                  handleNameUpdate(location.id, tempName);
-                                }
-                                setEditingName(null);
-                                setTempName('');
-                              }}
                               autoFocus
-                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              placeholder="Enter location name..."
                             />
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (tempName.trim()) {
                                   handleNameUpdate(location.id, tempName);
                                 }
                                 setEditingName(null);
                                 setTempName('');
                               }}
-                              className="text-green-600 hover:text-green-700 text-xs"
+                              className="flex-shrink-0 p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
+                              title="Save changes"
                             >
-                              ✓
+                              <Check className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setEditingName(null);
                                 setTempName('');
                               }}
-                              className="text-gray-400 hover:text-gray-600 text-xs"
+                              className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+                              title="Cancel editing"
                             >
-                              ✕
+                              <X className="h-4 w-4" />
                             </button>
                           </div>
                         ) : (
-                          <h4 
-                            className="font-medium text-gray-900 truncate cursor-pointer hover:text-green-600 flex-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingName(location.id);
-                              setTempName(location.name);
-                            }}
-                            title="Click to edit name"
-                          >
-                            {location.name}
-                          </h4>
-                        )}
-                        {location.isLegacy && (
-                          <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                            Legacy
-                          </span>
+                          <div className="flex items-center gap-2 flex-1">
+                            <h4 className="font-medium text-gray-900 truncate flex-1">
+                              {location.name}
+                            </h4>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingName(location.id);
+                                setTempName(location.name);
+                              }}
+                              className="flex-shrink-0 p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                              title="Edit location name"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            {location.isLegacy && (
+                              <span className="ml-1 text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                                Legacy
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                       <p className="text-sm text-gray-500 truncate">

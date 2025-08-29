@@ -2,8 +2,13 @@ import { ConsumptionSession, CreateConsumptionSession, QuantityValue } from '@/t
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
+// Define the type for a session with location
+type SessionWithLocation = Prisma.ConsumptionSessionGetPayload<{
+  include: { location_ref: true }
+}>;
+
 // Convert Prisma model to our app type
-function convertPrismaToSession(prismaSession: Prisma.ConsumptionSessionGetPayload<{include: {location_ref: true}}>): ConsumptionSession {
+function convertPrismaToSession(prismaSession: SessionWithLocation): ConsumptionSession {
   // Convert location_ref if available
   const location_ref = prismaSession.location_ref ? {
     id: prismaSession.location_ref.id,

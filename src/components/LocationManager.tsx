@@ -131,7 +131,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                 ...loc, 
                 latitude, 
                 longitude,
-                ...(finalAddress && { name: finalAddress, full_address: finalAddress })
+                ...(finalAddress && { full_address: finalAddress })
               }
             : loc
         ));

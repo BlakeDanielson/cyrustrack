@@ -73,8 +73,7 @@ export async function PUT(request: NextRequest) {
           latitude: latitude,
           longitude: longitude,
           ...(address && { 
-            full_address: address,
-            name: address 
+            full_address: address
           }),
           updated_at: new Date()
         }
@@ -182,8 +181,7 @@ export async function PATCH(request: NextRequest) {
               latitude: latitude,
               longitude: longitude,
               ...(address && { 
-                full_address: address,
-                name: address 
+                full_address: address
               }),
               updated_at: new Date()
             }

@@ -1,5 +1,4 @@
 import { CreateConsumptionSession, createQuantityValue, VesselType, FlowerSize, FLOWER_SIZES } from '@/types/consumption';
-import { v4 as uuidv4 } from 'uuid';
 
 // Interface for raw CSV data
 interface CSVRow {
@@ -57,7 +56,7 @@ const ACCESSORY_MAPPING: Record<string, string> = {
 };
 
 // Parse quantity from CSV format
-function parseQuantity(quantityStr: string, vessel: VesselType): any {
+function parseQuantity(quantityStr: string, vessel: VesselType): { amount: number; unit: string; type: string } {
   const qty = quantityStr.trim();
   
   // Handle hits format (e.g., "Hits_2", "Hits_3")
@@ -182,7 +181,7 @@ export function parseCSVContent(csvContent: string): CreateConsumptionSession[] 
     }
     
     // Create row object
-    const row: any = {};
+    const row: Record<string, string> = {};
     headers.forEach((header, index) => {
       row[header] = values[index] || '';
     });

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     
     let updated = 0;
     let failed = 0;
-    let errors: string[] = [];
+    const errors: string[] = [];
     
     for (const location of locationsToBackfill) {
       try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
         const geocodeResult = await geocodeLocation(location.full_address);
         
         if (geocodeResult.coordinates || geocodeResult.address_components) {
-          const updateData: any = {};
+          const updateData: Record<string, number | string | Date | { increment: number }> = {};
           
           // Update coordinates if we got them and don't have them
           if (geocodeResult.coordinates && !location.latitude && !location.longitude) {

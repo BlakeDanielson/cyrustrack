@@ -13,8 +13,8 @@ export default function CSVImportDialog({ isOpen, onClose, onImportComplete }: C
   const [csvContent, setCsvContent] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [validation, setValidation] = useState<any>(null);
-  const [importResult, setImportResult] = useState<any>(null);
+  const [validation, setValidation] = useState<{valid: boolean; errors: string[]; preview?: Record<string, unknown>[]} | null>(null);
+  const [importResult, setImportResult] = useState<{success: boolean; message: string; imported?: number; errors?: string[]} | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -124,7 +124,7 @@ export default function CSVImportDialog({ isOpen, onClose, onImportComplete }: C
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
             />
             <p className="mt-1 text-sm text-gray-500">
-              Expected format: Tab-separated values with Blake's tracking columns
+              Expected format: Tab-separated values with Blake&apos;s tracking columns
             </p>
           </div>
 

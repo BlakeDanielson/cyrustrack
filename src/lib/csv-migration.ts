@@ -39,7 +39,7 @@ export interface CSVRow {
 export interface MigrationStats {
   totalRows: number;
   successfulInserts: number;
-  errors: Array<{ row: number; error: string; data?: any }>;
+  errors: Array<{ row: number; error: string; data?: unknown }>;
   geocodingResults: {
     successful: number;
     failed: number;
@@ -118,7 +118,7 @@ function parseQuantity(quantityString: string, vessel: string): QuantityValue {
   
   try {
     return createQuantityValue(vessel as VesselType, amount);
-  } catch (error) {
+  } catch {
     // Fallback to default quantity if vessel type is not recognized
     return {
       amount,
@@ -189,7 +189,7 @@ function determineWhoWith(alone: string, people: string): string {
 /**
  * Transform CSV row to database record
  */
-async function transformCSVRow(row: CSVRow, rowIndex: number): Promise<any> {
+async function transformCSVRow(row: CSVRow, rowIndex: number): Promise<Record<string, unknown>> {
   const { date, time } = parseDateTime(row.When);
   const location = combineLocation(row.Location, row.City, row.State);
   const vessel = normalizeVessel(row.Vessel);
@@ -349,13 +349,13 @@ export async function migrateCsvData(csvFilePath: string): Promise<MigrationStat
  */
 export async function validateCsvData(csvFilePath: string): Promise<{
   isValid: boolean;
-  sampleTransformations: any[];
+  sampleTransformations: Record<string, unknown>[];
   vesselsFound: string[];
   issues: string[];
 }> {
   const result = {
     isValid: true,
-    sampleTransformations: [] as any[],
+    sampleTransformations: [] as Record<string, unknown>[],
     vesselsFound: [] as string[],
     issues: [] as string[]
   };

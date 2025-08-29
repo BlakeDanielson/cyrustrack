@@ -1,4 +1,4 @@
-import { parseCSVContent, validateCSVFormat, convertCSVRowToSession } from './csvImport';
+import { parseCSVContent, validateCSVFormat } from './csvImport';
 
 // Your sample data as a string (tab-separated)
 const sampleCSVData = `Instance (Blake Tracking)	Day of Week	When	Location	City	State	Alone?	People	Vessel	Accessory Used	Your Vessel	Your Substance	Strain	Type	THC %	Legal Product_Purchased?	State Purchased?	Tobacco	Kief	Concentrate	Lavendar	Quantity	Comments

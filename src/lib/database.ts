@@ -70,7 +70,7 @@ async function findOrCreateLocationEntry(locationStr: string, lat?: number, lng?
     
     if (location) {
       // Update usage count and last used
-      const updateData: any = { 
+      const updateData: Record<string, number | string | Date | { increment: number }> = { 
         usage_count: { increment: 1 },
         last_used_at: new Date(),
       };
@@ -113,7 +113,7 @@ async function findOrCreateLocationEntry(locationStr: string, lat?: number, lng?
     }
     
     // For new locations, try to geocode for enhanced data
-    let geocodedData: any = {};
+    let geocodedData: Record<string, unknown> = {};
     try {
       const { geocodeLocation } = await import('@/lib/geocoding');
       const geocodeResult = await geocodeLocation(locationStr);

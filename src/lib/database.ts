@@ -166,13 +166,36 @@ async function findOrCreateLocationEntry(locationStr: string, lat?: number, lng?
 }
 
 // Convert our app type to Prisma input
-async function convertSessionToPrismaInput(session: CreateConsumptionSession): Promise<Prisma.ConsumptionSessionCreateInput> {
-  // Find or create location entry
-  const locationId = await findOrCreateLocationEntry(
-    session.location,
-    session.latitude,
-    session.longitude
-  );
+async function convertSessionToPrismaInput(session: CreateConsumptionSession & { selectedLocationId?: string }): Promise<Prisma.ConsumptionSessionCreateInput> {
+  // Use provided location ID if available, otherwise find or create
+  let locationId = session.selectedLocationId;
+  
+  if (!locationId) {
+    locationId = await findOrCreateLocationEntry(
+      session.location,
+      session.latitude,
+      session.longitude
+    ) || undefined;
+  } else {
+    // If using existing location, update its usage count
+    try {
+      await prisma.location.update({
+        where: { id: locationId },
+        data: {
+          usage_count: { increment: 1 },
+          last_used_at: new Date()
+        }
+      });
+    } catch (error) {
+      console.error('Failed to update location usage:', error);
+      // Fall back to creating new location entry
+      locationId = await findOrCreateLocationEntry(
+        session.location,
+        session.latitude,
+        session.longitude
+      ) || undefined;
+    }
+  }
   
   return {
     date: session.date,
@@ -226,7 +249,7 @@ export const databaseService = {
   },
 
   // Create a new session
-  create: async (session: CreateConsumptionSession): Promise<ConsumptionSession> => {
+  create: async (session: CreateConsumptionSession & { selectedLocationId?: string }): Promise<ConsumptionSession> => {
     try {
       const prismaInput = await convertSessionToPrismaInput(session);
       const createdSession = await prisma.consumptionSession.create({

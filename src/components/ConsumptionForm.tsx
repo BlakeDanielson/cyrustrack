@@ -15,8 +15,7 @@ import {
 } from '@/types/consumption';
 import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
-import LocationAutocomplete from '@/components/LocationAutocomplete';
-import InteractiveLocationMap from '@/components/InteractiveLocationMap';
+import LocationSelector from '@/components/LocationSelector';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -101,6 +100,9 @@ const ConsumptionForm: React.FC = () => {
     ...currentSession
   });
 
+  // Track selected location ID for existing locations
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
   // Update store when form data changes
   useEffect(() => {
     updateCurrentSession(formData);
@@ -129,7 +131,9 @@ const ConsumptionForm: React.FC = () => {
       // Convert form data to session data with proper quantity format
       const sessionData = {
         ...formData,
-        quantity: createQuantityValue(formData.vessel as VesselType, formData.quantity)
+        quantity: createQuantityValue(formData.vessel as VesselType, formData.quantity),
+        // Include selected location ID if using existing location
+        ...(selectedLocationId && { selectedLocationId })
       };
 
       await addSession(sessionData);
@@ -161,6 +165,7 @@ const ConsumptionForm: React.FC = () => {
         });
 
         clearCurrentSession();
+        setSelectedLocationId(null);
       }, 500);
 
     } catch (error) {
@@ -219,33 +224,21 @@ const ConsumptionForm: React.FC = () => {
             <MapPin className="h-4 w-4" />
             Location *
           </label>
-          <LocationAutocomplete
+          <LocationSelector
             value={formData.location}
-            onLocationSelect={(location, coordinates) => {
+            latitude={formData.latitude}
+            longitude={formData.longitude}
+            onLocationSelect={(location, coordinates, locationId) => {
               handleInputChange('location', location);
+              setSelectedLocationId(locationId || null);
               if (coordinates) {
                 handleInputChange('latitude', coordinates.lat);
                 handleInputChange('longitude', coordinates.lng);
               }
             }}
-            placeholder="Start typing an address or place name..."
             required
           />
         </div>
-
-        {/* Interactive Map */}
-        {(formData.latitude && formData.longitude) && (
-          <InteractiveLocationMap
-            latitude={formData.latitude}
-            longitude={formData.longitude}
-            onLocationChange={(lat, lng) => {
-              handleInputChange('latitude', lat);
-              handleInputChange('longitude', lng);
-            }}
-            className="mt-4"
-            height="250px"
-          />
-        )}
 
 
 

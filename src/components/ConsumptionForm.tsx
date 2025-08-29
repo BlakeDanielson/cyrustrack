@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
+import InteractiveLocationMap from '@/components/InteractiveLocationMap';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -232,38 +233,21 @@ const ConsumptionForm: React.FC = () => {
           />
         </div>
 
-        {/* Optional Coordinates for Mapping */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Latitude (optional)
-            </label>
-            <input
-              type="number"
-              step="any"
-              value={formData.latitude || ''}
-              onChange={(e) => handleInputChange('latitude', e.target.value ? parseFloat(e.target.value) : undefined)}
-              placeholder="e.g., 37.7749"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Longitude (optional)
-            </label>
-            <input
-              type="number"
-              step="any"
-              value={formData.longitude || ''}
-              onChange={(e) => handleInputChange('longitude', e.target.value ? parseFloat(e.target.value) : undefined)}
-              placeholder="e.g., -122.4194"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 -mt-2">
-          Coordinates are auto-populated when you select an address above, or you can enter them manually to show this session on the map in analytics
-        </p>
+        {/* Interactive Map */}
+        {(formData.latitude && formData.longitude) && (
+          <InteractiveLocationMap
+            latitude={formData.latitude}
+            longitude={formData.longitude}
+            onLocationChange={(lat, lng) => {
+              handleInputChange('latitude', lat);
+              handleInputChange('longitude', lng);
+            }}
+            className="mt-4"
+            height="250px"
+          />
+        )}
+
+
 
         {/* Who With */}
         <div>

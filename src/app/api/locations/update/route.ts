@@ -128,7 +128,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const results = [];
+    const results: Array<{ locationId: string; success: boolean; updatedSessions?: number; isLegacy?: boolean; message?: string }> = [];
 
     // Process each update in a transaction
     await prisma.$transaction(async (tx) => {
@@ -203,9 +203,9 @@ export async function PATCH(request: NextRequest) {
           results.push({
             locationId,
             success: true,
-            location: result,
             updatedSessions: updatedSessions.count,
-            isLegacy: false
+            isLegacy: false,
+            message: `Updated location: ${result.name}`
           });
         }
       }

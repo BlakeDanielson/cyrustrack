@@ -48,7 +48,7 @@ export async function GET() {
       is_favorite: false,
       is_private: true,
       nickname: null,
-      usage_count: legacy._count.id,
+      usage_count: typeof legacy._count === 'object' ? legacy._count.id || 0 : 0,
       last_used_at: null,
       created_at: new Date(),
       updated_at: new Date(),

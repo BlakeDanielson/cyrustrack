@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       tobacco: body.tobacco ?? false,
       kief: body.kief ?? false,
       concentrate: body.concentrate ?? false,
+      lavender: body.lavender ?? false,
       quantity: body.quantity,
       quantity_legacy: body.quantity_legacy,
     };

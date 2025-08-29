@@ -142,9 +142,9 @@ async function findOrCreateLocationEntry(locationStr: string, lat?: number, lng?
       data: {
         name,
         full_address: locationStr,
-        city: geocodedData.city || fallbackCity,
-        state: geocodedData.state || fallbackState,
-        country: geocodedData.country,
+        city: (geocodedData.city as string) || fallbackCity,
+        state: (geocodedData.state as string) || fallbackState,
+        country: geocodedData.country as string | null,
         latitude: lat,
         longitude: lng,
         usage_count: 1,
@@ -175,7 +175,6 @@ async function convertSessionToPrismaInput(session: CreateConsumptionSession): P
     location: session.location,
     latitude: session.latitude,
     longitude: session.longitude,
-    location_id: locationId,
     who_with: session.who_with,
     vessel: session.vessel,
     accessory_used: session.accessory_used,
@@ -193,7 +192,12 @@ async function convertSessionToPrismaInput(session: CreateConsumptionSession): P
     quantity: JSON.stringify(session.quantity),
     quantity_legacy: session.quantity_legacy,
     comments: session.comments,
-  };
+    ...(locationId && {
+      location_ref: {
+        connect: { id: locationId }
+      }
+    })
+  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 // Database service using Prisma
@@ -387,11 +391,13 @@ export const databaseService = {
   // Batch create sessions (useful for data migration)
   createMany: async (sessions: CreateConsumptionSession[]): Promise<number> => {
     try {
-      const prismaInputs = await Promise.all(sessions.map(convertSessionToPrismaInput));
-      const result = await prisma.consumptionSession.createMany({
-        data: prismaInputs
-      });
-      return result.count;
+      // For bulk creation, we need to use individual creates since createMany doesn't support relations
+      const results = await Promise.all(
+        sessions.map(async session => prisma.consumptionSession.create({
+          data: await convertSessionToPrismaInput(session)
+        }))
+      );
+      return results.length;
     } catch (error) {
       console.error('Failed to create multiple sessions:', error);
       throw error;

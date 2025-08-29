@@ -1,4 +1,4 @@
-import { CreateConsumptionSession, createQuantityValue, VesselType, FlowerSize, FLOWER_SIZES } from '@/types/consumption';
+import { CreateConsumptionSession, createQuantityValue, VesselType, FlowerSize, FLOWER_SIZES, QuantityValue } from '@/types/consumption';
 
 // Interface for raw CSV data
 interface CSVRow {
@@ -56,7 +56,7 @@ const ACCESSORY_MAPPING: Record<string, string> = {
 };
 
 // Parse quantity from CSV format
-function parseQuantity(quantityStr: string, vessel: VesselType): { amount: number; unit: string; type: string } {
+function parseQuantity(quantityStr: string, vessel: VesselType): QuantityValue {
   const qty = quantityStr.trim();
   
   // Handle hits format (e.g., "Hits_2", "Hits_3")
@@ -181,13 +181,13 @@ export function parseCSVContent(csvContent: string): CreateConsumptionSession[] 
     }
     
     // Create row object
-    const row: Record<string, string> = {};
+    const row = {} as CSVRow;
     headers.forEach((header, index) => {
-      row[header] = values[index] || '';
+      (row as any)[header] = values[index] || ''; // eslint-disable-line @typescript-eslint/no-explicit-any
     });
     
     try {
-      const session = convertCSVRowToSession(row as CSVRow);
+      const session = convertCSVRowToSession(row);
       sessions.push(session);
     } catch (error) {
       console.error(`Error converting row ${i + 1}:`, error);

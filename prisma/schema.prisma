@@ -59,9 +59,9 @@ model ConsumptionSession {
   latitude          Float?    // Optional legacy field  
   longitude         Float?    // Optional legacy field
   
-  // Primary location relationship (now required)
-  location_id       String
-  location_ref      Location @relation(fields: [location_id], references: [id])
+  // Primary location relationship (optional for legacy data)
+  location_id       String?
+  location_ref      Location? @relation(fields: [location_id], references: [id])
   who_with          String
   vessel            String
   accessory_used    String

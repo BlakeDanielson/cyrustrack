@@ -95,6 +95,7 @@ const ConsumptionForm: React.FC = () => {
     tobacco: false,
     kief: false,
     concentrate: false,
+    lavender: false,
     quantity: 0.25, // Default for joint
     ...currentSession
   });
@@ -154,6 +155,7 @@ const ConsumptionForm: React.FC = () => {
           tobacco: false,
           kief: false,
           concentrate: false,
+          lavender: false,
           quantity: defaultQuantity
         });
 

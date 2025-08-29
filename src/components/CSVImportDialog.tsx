@@ -77,6 +77,7 @@ export default function CSVImportDialog({ isOpen, onClose, onImportComplete }: C
     } catch (error) {
       setImportResult({
         success: false,
+        message: 'Import failed',
         errors: ['Import failed: ' + (error as Error).message]
       });
     } finally {

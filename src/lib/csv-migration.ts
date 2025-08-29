@@ -299,7 +299,7 @@ export async function migrateCsvData(csvFilePath: string): Promise<MigrationStat
         
         // Insert into database
         await prisma.consumptionSession.create({
-          data: transformedData
+          data: transformedData as any // eslint-disable-line @typescript-eslint/no-explicit-any
         });
         
         stats.successfulInserts++;

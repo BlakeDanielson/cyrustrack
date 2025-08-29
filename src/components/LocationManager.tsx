@@ -39,6 +39,8 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
 
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [tempName, setTempName] = useState<string>('');
 
   // Get Mapbox token from environment and load map components
   useEffect(() => {
@@ -85,6 +87,46 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
+
+  // Handle name updates
+  const handleNameUpdate = async (locationId: string, newName: string) => {
+    try {
+      const location = locations.find(loc => loc.id === locationId);
+      if (!location) return;
+
+      const response = await fetch('/api/locations/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          locationId,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          name: newName,
+          isLegacy: location.isLegacy
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update the location in state
+        setLocations(prev => prev.map(loc => 
+          loc.id === locationId 
+            ? { ...loc, name: newName }
+            : loc
+        ));
+
+        console.log(`Updated location name to ${newName}`);
+      } else {
+        throw new Error(data.error || 'Failed to update location name');
+      }
+    } catch (err) {
+      console.error('Error updating location name:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update location name');
+    }
+  };
 
   // Handle coordinate updates with optional reverse geocoding
   const handleCoordinateUpdate = async (locationId: string, latitude: number, longitude: number, address?: string, withReverseGeocode = false) => {
@@ -175,7 +217,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Location Management</h2>
         <p className="text-sm text-gray-600">
-          View and edit the coordinates for all your consumption locations. Drag pins on the map to update coordinates.
+          View and edit your consumption locations. Click location names to rename them, drag pins on the map to update coordinates.
         </p>
       </div>
 
@@ -212,7 +254,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
             All Locations ({filteredLocations.length})
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Click to expand details and edit coordinates manually
+            Click location names to rename. Click to expand details and edit coordinates.
           </p>
         </div>
         
@@ -237,14 +279,74 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                       <MapPin className={`h-5 w-5 ${location.latitude && location.longitude ? 'text-green-600' : 'text-gray-400'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 truncate">
-                        {location.name}
+                      <div className="flex items-center gap-2">
+                        {editingName === location.id ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <input
+                              type="text"
+                              value={tempName}
+                              onChange={(e) => setTempName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleNameUpdate(location.id, tempName);
+                                  setEditingName(null);
+                                  setTempName('');
+                                } else if (e.key === 'Escape') {
+                                  setEditingName(null);
+                                  setTempName('');
+                                }
+                              }}
+                              onBlur={() => {
+                                if (tempName.trim() && tempName !== location.name) {
+                                  handleNameUpdate(location.id, tempName);
+                                }
+                                setEditingName(null);
+                                setTempName('');
+                              }}
+                              autoFocus
+                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                            />
+                            <button
+                              onClick={() => {
+                                if (tempName.trim()) {
+                                  handleNameUpdate(location.id, tempName);
+                                }
+                                setEditingName(null);
+                                setTempName('');
+                              }}
+                              className="text-green-600 hover:text-green-700 text-xs"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingName(null);
+                                setTempName('');
+                              }}
+                              className="text-gray-400 hover:text-gray-600 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <h4 
+                            className="font-medium text-gray-900 truncate cursor-pointer hover:text-green-600 flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingName(location.id);
+                              setTempName(location.name);
+                            }}
+                            title="Click to edit name"
+                          >
+                            {location.name}
+                          </h4>
+                        )}
                         {location.isLegacy && (
                           <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
                             Legacy
                           </span>
                         )}
-                      </h4>
+                      </div>
                       <p className="text-sm text-gray-500 truncate">
                         {location.full_address}
                       </p>

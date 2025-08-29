@@ -12,6 +12,7 @@ export async function PUT(request: NextRequest) {
       latitude, 
       longitude, 
       address,
+      name,
       isLegacy = false 
     } = body;
 
@@ -75,6 +76,9 @@ export async function PUT(request: NextRequest) {
           ...(address && { 
             full_address: address
           }),
+          ...(name && { 
+            name: name
+          }),
           updated_at: new Date()
         }
       });
@@ -87,7 +91,8 @@ export async function PUT(request: NextRequest) {
         data: {
           latitude: latitude,
           longitude: longitude,
-          ...(address && { location: address })
+          ...(address && { location: address }),
+          ...(name && { location: name })
         }
       });
 
@@ -137,6 +142,7 @@ export async function PATCH(request: NextRequest) {
           latitude, 
           longitude, 
           address,
+          name,
           isLegacy = false 
         } = update;
 
@@ -183,6 +189,9 @@ export async function PATCH(request: NextRequest) {
               ...(address && { 
                 full_address: address
               }),
+              ...(name && { 
+                name: name
+              }),
               updated_at: new Date()
             }
           });
@@ -194,7 +203,8 @@ export async function PATCH(request: NextRequest) {
             data: {
               latitude: latitude,
               longitude: longitude,
-              ...(address && { location: address })
+              ...(address && { location: address }),
+              ...(name && { location: name })
             }
           });
 

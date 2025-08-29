@@ -7,7 +7,6 @@ import {
   TrendingDown, 
   BarChart3, 
   Sun, 
-  Cloud, 
   Snowflake,
   Leaf
 } from 'lucide-react';

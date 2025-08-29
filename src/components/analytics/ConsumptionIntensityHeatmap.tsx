@@ -18,8 +18,7 @@ const DayCell: React.FC<{
   date: Date; 
   value: number; 
   showQuantity: boolean;
-  maxValue: number;
-}> = ({ level, isToday, date, value, showQuantity, maxValue }) => {
+}> = ({ level, isToday, date, value, showQuantity }) => {
   // Enhanced color scheme with more granular levels
   const levelClasses = [
     'bg-gray-100',      // 0 – no consumption
@@ -236,7 +235,6 @@ const ConsumptionIntensityHeatmap: React.FC<ConsumptionIntensityHeatmapProps> = 
                   date={date}
                   value={value}
                   showQuantity={showQuantity}
-                  maxValue={maxValue}
                 />
               );
             })}
@@ -255,7 +253,6 @@ const ConsumptionIntensityHeatmap: React.FC<ConsumptionIntensityHeatmapProps> = 
               date={new Date()}
               value={0}
               showQuantity={showQuantity}
-              maxValue={maxValue}
             />
           ))}
         </div>

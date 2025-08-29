@@ -22,7 +22,7 @@ interface HolidayImpactAnalysisProps {
 interface HolidayData {
   name: string;
   date: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
   sessions: number;
@@ -40,14 +40,14 @@ interface HolidayPeriod {
   name: string;
   startDate: string;
   endDate: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
 }
 
 const HolidayImpactAnalysis: React.FC<HolidayImpactAnalysisProps> = ({ sessions }) => {
   // Define major holidays and their periods
-  const holidays: HolidayPeriod[] = [
+  const holidays = useMemo((): HolidayPeriod[] => [
     {
       name: 'New Year\'s',
       startDate: '12-31',
@@ -112,7 +112,7 @@ const HolidayImpactAnalysis: React.FC<HolidayImpactAnalysisProps> = ({ sessions 
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50'
     }
-  ];
+  ], []);
 
   const holidayData = useMemo((): HolidayData[] => {
     if (sessions.length === 0) return [];
@@ -122,9 +122,6 @@ const HolidayImpactAnalysis: React.FC<HolidayImpactAnalysisProps> = ({ sessions 
       (new Date().getTime() - new Date(sessions[0]?.date || Date.now()).getTime()) / (1000 * 60 * 60 * 24)
     ));
     const baselineSessionsPerDay = sessions.length / totalDays;
-    const baselineQuantityPerDay = sessions.reduce((sum, session) => 
-      sum + AnalyticsService.normalizeQuantity(session), 0
-    ) / totalDays;
 
     return holidays.map(holiday => {
       // Filter sessions for this holiday period
@@ -189,15 +186,10 @@ const HolidayImpactAnalysis: React.FC<HolidayImpactAnalysisProps> = ({ sessions 
       
       // Compare with baseline
       const expectedSessions = baselineSessionsPerDay * holidayDays;
-      const expectedQuantity = baselineQuantityPerDay * holidayDays;
       
       const sessionComparison = holidaySessions.length - expectedSessions;
       const sessionPercentage = expectedSessions > 0 ? 
         ((holidaySessions.length - expectedSessions) / expectedSessions) * 100 : 0;
-      
-      const quantityComparison = totalQuantity - expectedQuantity;
-      const quantityPercentage = expectedQuantity > 0 ? 
-        ((totalQuantity - expectedQuantity) / expectedQuantity) * 100 : 0;
 
       // Determine impact level
       let impact: 'high' | 'medium' | 'low' | 'none' = 'none';
@@ -227,7 +219,7 @@ const HolidayImpactAnalysis: React.FC<HolidayImpactAnalysisProps> = ({ sessions 
         }
       };
     });
-  }, [sessions]);
+  }, [sessions, holidays]);
 
   // Calculate overall holiday impact statistics
   const holidayStats = useMemo(() => {

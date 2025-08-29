@@ -8,13 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { 
   BarChart3, 
   Calendar, 
-  TrendingUp, 
   Flame,
-  Zap,
   Leaf,
   Package,
-  Target,
-  Clock
+  Target
 } from 'lucide-react';
 
 interface EnhancedAnalyticsDemoProps {

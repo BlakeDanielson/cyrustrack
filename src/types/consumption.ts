@@ -11,6 +11,25 @@ export interface QuantityValue {
 export const FLOWER_SIZES = ['tiny', 'small', 'medium', 'large'] as const;
 export type FlowerSize = typeof FLOWER_SIZES[number];
 
+// Location reference type
+export interface LocationReference {
+  id: string;
+  name: string;
+  full_address: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  is_favorite: boolean;
+  is_private: boolean;
+  nickname?: string;
+  usage_count: number;
+  last_used_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Consumption session data types
 export interface ConsumptionSession {
   id: string;
@@ -18,21 +37,30 @@ export interface ConsumptionSession {
   // Core Fields
   date: string;
   time: string;
-  location: string;
-  latitude?: number;
-  longitude?: number;
+  
+  // Location data (prioritizes normalized location over legacy fields)
+  location: string;           // Display name (from location_ref.name or legacy field)
+  latitude?: number;          // Coordinates (from location_ref or legacy fields)
+  longitude?: number;         // Coordinates (from location_ref or legacy fields)
+  location_ref?: LocationReference; // Full location relationship (when available)
+  
   who_with: string;
   vessel: string;
   accessory_used: string;
   my_vessel: boolean;
   my_substance: boolean;
   strain_name: string;
+  strain_type?: string;
   thc_percentage?: number;
   purchased_legally: boolean;
   state_purchased?: string;
   tobacco: boolean;
   kief: boolean;
   concentrate: boolean;
+  lavender: boolean;
+
+  // User notes and comments
+  comments?: string;
 
   // Enhanced quantity system
   quantity: QuantityValue;
@@ -51,7 +79,6 @@ export type CreateConsumptionSession = Omit<ConsumptionSession, 'id' | 'created_
 // Vessel types (devices for consumption)
 export const VESSEL_TYPES = [
   'Joint',
-  'Blunt',
   'Pipe',
   'Bong',
   'Vape Pen',
@@ -66,7 +93,6 @@ export type VesselType = typeof VESSEL_TYPES[number];
 // Quantity configuration for each vessel type
 export const VESSEL_QUANTITY_CONFIG = {
   'Joint': { type: 'decimal' as QuantityType, unit: 'joint portion', placeholder: '0.25', step: 0.01 },
-  'Blunt': { type: 'decimal' as QuantityType, unit: 'blunt portion', placeholder: '0.33', step: 0.01 },
   'Pipe': { type: 'size_category' as QuantityType, unit: 'bowl size', options: FLOWER_SIZES },
   'Bong': { type: 'size_category' as QuantityType, unit: 'bowl size', options: FLOWER_SIZES },
   'Vape Pen': { type: 'decimal' as QuantityType, unit: 'puffs', placeholder: '5', step: 1 },

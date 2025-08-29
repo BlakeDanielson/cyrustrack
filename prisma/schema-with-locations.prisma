@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// Enhanced schema with normalized locations table
 generator client {
   provider = "prisma-client-js"
 }
@@ -54,14 +52,15 @@ model ConsumptionSession {
   date              String
   time              String
   
-  // Legacy location fields (keeping for backward compatibility)
-  location          String?   // Optional legacy field
-  latitude          Float?    // Optional legacy field  
-  longitude         Float?    // Optional legacy field
+  // Location relationship (replaces location string + lat/lng)
+  location_id       String?
+  location          Location? @relation(fields: [location_id], references: [id])
   
-  // Primary location relationship (now required)
-  location_id       String
-  location_ref      Location @relation(fields: [location_id], references: [id])
+  // Legacy location support (for migration period)
+  location_legacy   String?
+  latitude_legacy   Float?
+  longitude_legacy  Float?
+  
   who_with          String
   vessel            String
   accessory_used    String
@@ -83,7 +82,6 @@ model ConsumptionSession {
   comments          String?
 
   // Quantity system - stored as JSON for flexibility
-  // Contains: { amount: number, unit: string, type: string }
   quantity String // JSON string
 
   // Legacy support - for data migration

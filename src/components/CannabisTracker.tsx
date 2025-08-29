@@ -9,7 +9,9 @@ import FrequencyAnalytics from './analytics/FrequencyAnalytics';
 import LocationAnalytics from './analytics/LocationAnalytics';
 import StrainAnalytics from './analytics/StrainAnalytics';
 import CoreAnalyticsDashboard from './analytics/CoreDashboard';
-import { BarChart3, Settings as SettingsIcon, Clock, MapPin, Leaf } from 'lucide-react';
+import CSVImportDialog from './CSVImportDialog';
+import LocationManager from './LocationManager';
+import { BarChart3, Settings as SettingsIcon, Clock, MapPin, Leaf, Upload } from 'lucide-react';
 import { autoMigration } from '@/lib/auto-migration';
 
 // Analytics component with multiple analytics views
@@ -86,6 +88,7 @@ const Analytics: React.FC = () => {
 
 const Settings: React.FC = () => {
   const { preferences, updatePreferences, loadSessions } = useConsumptionStore();
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const handlePreferenceChange = (key: keyof typeof preferences, value: string | boolean) => {
     updatePreferences({ [key]: value });
@@ -126,11 +129,21 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleImportComplete = (count: number) => {
+    alert(`Successfully imported ${count} sessions!`);
+    loadSessions(); // Refresh the store to show imported data
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <div className="flex items-center gap-2 mb-6">
         <SettingsIcon className="h-6 w-6 text-green-600" />
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      </div>
+      
+      {/* Location Management Section */}
+      <div className="mb-8">
+        <LocationManager className="bg-white rounded-lg border border-gray-200 p-6" />
       </div>
       
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
@@ -178,18 +191,26 @@ const Settings: React.FC = () => {
 
         <div className="pt-6 border-t border-gray-200">
           <div className="text-center">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Data Storage</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Data Management</h4>
             <p className="text-sm text-gray-500 mb-4">
               Your data is stored in a local database with automatic backup to localStorage for privacy and security.
             </p>
-            <div className="space-y-2">
-              <button 
-                onClick={handleExportData}
-                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-              >
-                Export All Data
-              </button>
-              <br />
+            <div className="space-y-3">
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setShowImportDialog(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Import CSV Data
+                </button>
+                <button 
+                  onClick={handleExportData}
+                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Export All Data
+                </button>
+              </div>
               <button 
                 onClick={handleClearData}
                 className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
@@ -200,6 +221,12 @@ const Settings: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <CSVImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onImportComplete={handleImportComplete}
+      />
     </div>
   );
 };

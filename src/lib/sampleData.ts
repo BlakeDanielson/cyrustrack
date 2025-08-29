@@ -149,7 +149,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     latitude: 37.7849,
     longitude: -122.5094,
     who_with: 'Group of friends',
-    vessel: 'Blunt',
+    vessel: 'Joint',
     accessory_used: 'Grinder',
     my_vessel: true,
     my_substance: false,
@@ -160,7 +160,7 @@ export const sampleSessionsWithCoordinates: ConsumptionSession[] = [
     tobacco: true,
     kief: false,
     concentrate: false,
-    quantity: createQuantityValue('Blunt', 0.75),
+    quantity: createQuantityValue('Joint', 0.75),
     created_at: new Date('2024-01-28T17:20:00').toISOString(),
     updated_at: new Date('2024-01-28T17:20:00').toISOString()
   },

@@ -72,35 +72,64 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     fetchExistingLocations();
   }, []);
 
-  // Filter locations based on search term
+  // Search locations when search term changes
   useEffect(() => {
-    // Ensure existingLocations is an array
-    if (!Array.isArray(existingLocations)) {
-      console.warn('existingLocations is not an array:', existingLocations);
-      setFilteredLocations([]);
-      return;
-    }
+    const searchLocations = async () => {
+      // Ensure existingLocations is an array
+      if (!Array.isArray(existingLocations)) {
+        console.warn('existingLocations is not an array:', existingLocations);
+        setFilteredLocations([]);
+        return;
+      }
 
-    if (!searchTerm.trim()) {
-      // Sort by favorites first, then by usage count, then by most recent
-      const sorted = [...existingLocations].sort((a, b) => {
-        if (a.is_favorite && !b.is_favorite) return -1;
-        if (!a.is_favorite && b.is_favorite) return 1;
-        if (a.usage_count !== b.usage_count) return b.usage_count - a.usage_count;
-        if (a.last_used_at && b.last_used_at) {
-          return new Date(b.last_used_at).getTime() - new Date(a.last_used_at).getTime();
+      if (!searchTerm.trim()) {
+        // No search term - show sorted existing locations
+        const sorted = [...existingLocations].sort((a, b) => {
+          if (a.is_favorite && !b.is_favorite) return -1;
+          if (!a.is_favorite && b.is_favorite) return 1;
+          if (a.usage_count !== b.usage_count) return b.usage_count - a.usage_count;
+          if (a.last_used_at && b.last_used_at) {
+            return new Date(b.last_used_at).getTime() - new Date(a.last_used_at).getTime();
+          }
+          return 0;
+        });
+        setFilteredLocations(sorted);
+      } else {
+        // Search term provided - query the API for all matching locations
+        try {
+          setIsLoading(true);
+          const response = await fetch(`/api/locations?q=${encodeURIComponent(searchTerm)}`);
+          if (response.ok) {
+            const data = await response.json();
+            const searchResults = data.locations || [];
+            setFilteredLocations(searchResults);
+          } else {
+            // Fallback to client-side filtering if API fails
+            const filtered = existingLocations.filter(location =>
+              location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              location.full_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (location.nickname && location.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+            setFilteredLocations(filtered);
+          }
+        } catch (error) {
+          console.error('Error searching locations:', error);
+          // Fallback to client-side filtering
+          const filtered = existingLocations.filter(location =>
+            location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            location.full_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (location.nickname && location.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
+          );
+          setFilteredLocations(filtered);
+        } finally {
+          setIsLoading(false);
         }
-        return 0;
-      });
-      setFilteredLocations(sorted);
-    } else {
-      const filtered = existingLocations.filter(location =>
-        location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        location.full_address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (location.nickname && location.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      setFilteredLocations(filtered);
-    }
+      }
+    };
+
+    // Debounce the search to avoid too many API calls
+    const timeoutId = setTimeout(searchLocations, 300);
+    return () => clearTimeout(timeoutId);
   }, [searchTerm, existingLocations]);
 
   // Check if we should default to existing mode
@@ -191,8 +220,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               placeholder="Search your locations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+            {isLoading && searchTerm && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+              </div>
+            )}
           </div>
 
           {/* Locations List */}

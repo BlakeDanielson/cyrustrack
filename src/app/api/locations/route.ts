@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const favorites = searchParams.get('favorites') === 'true';
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '50'); // Increased default limit
     
     if (favorites) {
       const favoriteLocations = await getFavoriteLocations();
@@ -15,18 +15,36 @@ export async function GET(request: NextRequest) {
     }
     
     if (query) {
-      const suggestions = await getLocationSuggestions(query, limit);
-      return NextResponse.json({ locations: suggestions });
+      // Search across ALL locations when query is provided
+      const locations = await prisma.location.findMany({
+        where: {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { full_address: { contains: query, mode: 'insensitive' } },
+            { nickname: { contains: query, mode: 'insensitive' } },
+            { city: { contains: query, mode: 'insensitive' } },
+            { state: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        orderBy: [
+          { is_favorite: 'desc' },
+          { usage_count: 'desc' },
+          { last_used_at: 'desc' }
+        ]
+        // No limit when searching - show all matching results
+      });
+      
+      return NextResponse.json({ locations });
     }
     
-    // Get all locations ordered by usage
+    // Get top locations ordered by usage (only when not searching)
     const locations = await prisma.location.findMany({
       orderBy: [
         { is_favorite: 'desc' },
         { usage_count: 'desc' },
         { last_used_at: 'desc' }
       ],
-      take: limit
+      take: limit // Limit only applies to the initial load
     });
     
     return NextResponse.json({ locations });

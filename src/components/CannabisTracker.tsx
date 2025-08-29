@@ -9,15 +9,18 @@ import FrequencyAnalytics from './analytics/FrequencyAnalytics';
 import LocationAnalytics from './analytics/LocationAnalytics';
 import StrainAnalytics from './analytics/StrainAnalytics';
 import CoreAnalyticsDashboard from './analytics/CoreDashboard';
+import ConsumptionIntensityHeatmap from './analytics/ConsumptionIntensityHeatmap';
+import SeasonalAnalysis from './analytics/SeasonalAnalysis';
+import HolidayImpactAnalysis from './analytics/HolidayImpactAnalysis';
 import CSVImportDialog from './CSVImportDialog';
 import LocationManager from './LocationManager';
-import { BarChart3, Settings as SettingsIcon, Clock, MapPin, Leaf, Upload } from 'lucide-react';
+import { BarChart3, Settings as SettingsIcon, Clock, MapPin, Leaf, Upload, Flame, Calendar } from 'lucide-react';
 import { autoMigration } from '@/lib/auto-migration';
 
 // Analytics component with multiple analytics views
 const Analytics: React.FC = () => {
   const { sessions } = useConsumptionStore();
-  const [activeTab, setActiveTab] = useState<'core' | 'frequency' | 'location' | 'strain'>('core');
+  const [activeTab, setActiveTab] = useState<'core' | 'frequency' | 'location' | 'strain' | 'intensity' | 'seasonal' | 'holiday'>('core');
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6">
@@ -77,53 +80,108 @@ const Analytics: React.FC = () => {
             <Leaf className="h-4 w-4" />
             Strains
           </button>
+          <button
+            onClick={() => setActiveTab('intensity')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'intensity'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Flame className="h-4 w-4" />
+            Intensity
+          </button>
+          <button
+            onClick={() => setActiveTab('seasonal')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'seasonal'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Leaf className="h-4 w-4" />
+            Seasonal
+          </button>
+          <button
+            onClick={() => setActiveTab('holiday')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === 'holiday'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Calendar className="h-4 w-4" />
+            Holiday
+          </button>
         </div>
 
-        {/* Mobile tabs - 2x2 grid */}
-        <div className="grid grid-cols-2 gap-2 sm:hidden">
+        {/* Mobile tabs - 3x3 grid for more analytics */}
+        <div className="grid grid-cols-3 gap-2 sm:hidden">
           <button
             onClick={() => setActiveTab('core')}
-            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
               activeTab === 'core'
                 ? 'bg-green-100 text-green-700 border-2 border-green-300'
                 : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
             }`}
           >
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="h-3 w-3" />
             Overview
           </button>
           <button
             onClick={() => setActiveTab('frequency')}
-            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
               activeTab === 'frequency'
                 ? 'bg-green-100 text-green-700 border-2 border-green-300'
                 : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
             }`}
           >
-            <Clock className="h-4 w-4" />
+            <Clock className="h-3 w-3" />
             Frequency
           </button>
           <button
             onClick={() => setActiveTab('location')}
-            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
               activeTab === 'location'
                 ? 'bg-green-100 text-green-700 border-2 border-green-300'
                 : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
             }`}
           >
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-3 w-3" />
             Locations
           </button>
           <button
             onClick={() => setActiveTab('strain')}
-            className={`flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium rounded-lg transition-colors ${
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
               activeTab === 'strain'
                 ? 'bg-green-100 text-green-700 border-2 border-green-300'
                 : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
             }`}
           >
-            <Leaf className="h-4 w-4" />
+            <Leaf className="h-3 w-3" />
             Strains
+          </button>
+          <button
+            onClick={() => setActiveTab('intensity')}
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
+              activeTab === 'intensity'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <Flame className="h-3 w-3" />
+            Intensity
+          </button>
+          <button
+            onClick={() => setActiveTab('seasonal')}
+            className={`flex items-center justify-center gap-1 px-2 py-2 text-xs font-medium rounded-lg transition-colors ${
+              activeTab === 'seasonal'
+                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <Leaf className="h-3 w-3" />
+            Seasonal
           </button>
         </div>
       </div>
@@ -133,6 +191,9 @@ const Analytics: React.FC = () => {
       {activeTab === 'frequency' && <FrequencyAnalytics sessions={sessions} />}
       {activeTab === 'location' && <LocationAnalytics sessions={sessions} />}
       {activeTab === 'strain' && <StrainAnalytics sessions={sessions} />}
+      {activeTab === 'intensity' && <ConsumptionIntensityHeatmap sessions={sessions} />}
+      {activeTab === 'seasonal' && <SeasonalAnalysis sessions={sessions} />}
+      {activeTab === 'holiday' && <HolidayImpactAnalysis sessions={sessions} />}
     </div>
   );
 };

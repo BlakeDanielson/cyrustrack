@@ -409,8 +409,11 @@ export class AnalyticsService {
     const quantityTrendOverTime = this.getRecentWeeklyQuantityTrend(sessions, 12);
 
     // Quantity efficiency metrics
-    const totalQuantity = sessions.reduce((sum, session) => sum + this.normalizeQuantity(session), 0);
-    const averagePerSession = Math.round((totalQuantity / sessions.length) * 100) / 100;
+    const totalQuantity = sessions.reduce((sum, session) => {
+      const quantity = this.normalizeQuantity(session);
+      return sum + (typeof quantity === 'number' && !isNaN(quantity) ? quantity : 0);
+    }, 0);
+    const averagePerSession = sessions.length > 0 ? Math.round((totalQuantity / sessions.length) * 100) / 100 : 0;
 
     const mostEfficientVessel = Object.entries(averageQuantityByVessel)
       .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
@@ -437,15 +440,16 @@ export class AnalyticsService {
   /**
    * Normalize quantity value to a comparable number
    */
-  private static normalizeQuantity(session: ConsumptionSession): number {
+  static normalizeQuantity(session: ConsumptionSession): number {
     // Handle legacy format
     if (typeof session.quantity === 'number') {
-      return session.quantity;
+      return isNaN(session.quantity) ? 0 : session.quantity;
     }
 
     // Handle new format
-    if (session.quantity && typeof session.quantity === 'object') {
-      return session.quantity.amount;
+    if (session.quantity && typeof session.quantity === 'object' && session.quantity.amount !== undefined) {
+      const amount = session.quantity.amount;
+      return typeof amount === 'number' && !isNaN(amount) ? amount : 0;
     }
 
     return 0;
@@ -472,7 +476,10 @@ export class AnalyticsService {
         return isWithinInterval(sessionDate, { start: weekStart, end: weekEnd });
       });
 
-      const totalQuantity = weekSessions.reduce((sum, session) => sum + this.normalizeQuantity(session), 0);
+      const totalQuantity = weekSessions.reduce((sum, session) => {
+        const quantity = this.normalizeQuantity(session);
+        return sum + (typeof quantity === 'number' && !isNaN(quantity) ? quantity : 0);
+      }, 0);
       const averageQuantity = weekSessions.length > 0 ? totalQuantity / weekSessions.length : 0;
 
       return {

@@ -55,7 +55,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         if (!response.ok) {
           throw new Error('Failed to fetch locations');
         }
-        const locations = await response.json();
+        const data = await response.json();
+        const locations = data.locations || [];
         setExistingLocations(locations);
         setFilteredLocations(locations);
       } catch (err) {
@@ -73,6 +74,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   // Filter locations based on search term
   useEffect(() => {
+    // Ensure existingLocations is an array
+    if (!Array.isArray(existingLocations)) {
+      console.warn('existingLocations is not an array:', existingLocations);
+      setFilteredLocations([]);
+      return;
+    }
+
     if (!searchTerm.trim()) {
       // Sort by favorites first, then by usage count, then by most recent
       const sorted = [...existingLocations].sort((a, b) => {

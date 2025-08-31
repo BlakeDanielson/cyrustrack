@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useMemo } from 'react';
-import { BarChart3, Clock, Leaf, MapPin, Settings as SettingsIcon, NotebookPen, LayoutDashboard } from 'lucide-react';
+import { BarChart3, Clock, Leaf, Settings as SettingsIcon, NotebookPen, LayoutDashboard } from 'lucide-react';
 import ClientInitializer from '@/components/ClientInitializer';
 
 type AltLayoutProps = {
@@ -72,7 +72,7 @@ export default function AltLayout({ children }: AltLayoutProps) {
         </aside>
 
         {/* Content */}
-        <div className="flex-1">
+        <div className="flex-1 pb-16 md:pb-0">
           {/* Top bar for mobile */}
           <header className="md:hidden sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
             <div className="flex items-center justify-between px-4 py-3">
@@ -87,6 +87,30 @@ export default function AltLayout({ children }: AltLayoutProps) {
           <main className="p-4 md:p-6 lg:p-8">
             {children}
           </main>
+
+          {/* Bottom nav for mobile */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t">
+            <ul className="grid grid-cols-5">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={
+                        `flex flex-col items-center justify-center py-2 text-[11px] leading-tight transition-colors ` +
+                        (isActive ? 'text-green-700' : 'text-gray-600 hover:text-gray-900')
+                      }
+                    >
+                      <Icon className={"h-5 w-5 mb-0.5 " + (isActive ? 'text-green-700' : 'text-gray-500')} />
+                      <span>{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </div>
       </div>
     </div>

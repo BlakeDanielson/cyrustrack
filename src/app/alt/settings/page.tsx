@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { Database, RefreshCw, FileDown, FileUp, LifeBuoy, ExternalLink, GitBranch } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import LocationManager from '@/components/LocationManager';
 import CSVImportDialog from '@/components/CSVImportDialog';
@@ -43,6 +45,36 @@ export default function AltSettingsPage() {
     }
   };
 
+  const handleMigrateToDatabase = async () => {
+    try {
+      const { hybridStorageService } = await import('@/lib/storage-hybrid');
+      const result = await hybridStorageService.migrateToDatabase();
+      if (result.success) {
+        alert(`Migration completed. Migrated ${result.migrated || 0} sessions.`);
+        await loadSessions();
+      } else {
+        alert(`Migration failed: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+      alert('Migration request failed. See console for details.');
+    }
+  };
+
+  const handleSyncWithDatabase = async () => {
+    try {
+      const { hybridStorageService } = await import('@/lib/storage-hybrid');
+      const result = await hybridStorageService.syncWithDatabase();
+      const message = `Synced ${result.synced} sessions${result.errors.length ? ` with ${result.errors.length} errors` : ''}.`;
+      console.log('Sync result:', result);
+      alert(message);
+      await loadSessions();
+    } catch (error) {
+      console.error('Sync error:', error);
+      alert('Sync request failed. See console for details.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
@@ -80,26 +112,76 @@ export default function AltSettingsPage() {
           </div>
         </div>
 
-        <div className="pt-4 border-t">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => setShowImportDialog(true)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Import CSV Data
-            </button>
-            <button
-              onClick={handleExportData}
-              className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-            >
-              Export All Data
-            </button>
-            <button
-              onClick={handleClearData}
-              className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-            >
-              Clear All Data
-            </button>
+        <div className="pt-4 border-t grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Quick Actions */}
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Quick Actions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowImportDialog(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <FileUp className="h-4 w-4" />
+                Import CSV Data
+              </button>
+              <button
+                onClick={handleExportData}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+              >
+                <FileDown className="h-4 w-4" />
+                Export All Data
+              </button>
+              <button
+                onClick={handleMigrateToDatabase}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 transition-colors"
+              >
+                <Database className="h-4 w-4" />
+                Migrate Local → Database
+              </button>
+              <button
+                onClick={handleSyncWithDatabase}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-md hover:bg-teal-700 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Sync With Database
+              </button>
+              <button
+                onClick={handleClearData}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+              >
+                <GitBranch className="h-4 w-4" />
+                Clear All Data
+              </button>
+            </div>
+          </div>
+
+          {/* Helpful Links */}
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Helpful Links</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/docs/prd" className="text-green-700 hover:underline inline-flex items-center gap-1">
+                  Product Requirements Doc
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </li>
+              <li>
+                <Link href="/ENHANCED_ANALYTICS_README" className="text-green-700 hover:underline inline-flex items-center gap-1">
+                  Enhanced Analytics Guide
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </li>
+              <li>
+                <Link href="/VERCEL_BLOB_SETUP" className="text-green-700 hover:underline inline-flex items-center gap-1">
+                  Image Storage Setup
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </li>
+              <li className="text-gray-600 flex items-center gap-2">
+                <LifeBuoy className="h-4 w-4 text-gray-500" />
+                Need help? Check repository README and deployment docs.
+              </li>
+            </ul>
           </div>
         </div>
       </div>

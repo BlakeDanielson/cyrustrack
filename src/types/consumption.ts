@@ -30,6 +30,20 @@ export interface LocationReference {
   updated_at: string;
 }
 
+// Image type for session images
+export interface SessionImage {
+  id: string;
+  session_id: string;
+  blob_url: string;
+  filename: string;
+  file_size: number;
+  mime_type: string;
+  width?: number;
+  height?: number;
+  alt_text?: string;
+  created_at: string;
+}
+
 // Consumption session data types
 export interface ConsumptionSession {
   id: string;
@@ -67,6 +81,9 @@ export interface ConsumptionSession {
 
   // Legacy support - remove after migration
   quantity_legacy?: number;
+
+  // Images
+  images?: SessionImage[];
 
   // Metadata
   created_at: string;

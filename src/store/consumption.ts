@@ -11,7 +11,7 @@ import { storageService } from '@/lib/storage';
 
 interface ConsumptionStore extends AppState {
   // Actions for consumption sessions
-  addSession: (session: CreateConsumptionSession) => Promise<void>;
+  addSession: (session: CreateConsumptionSession) => Promise<ConsumptionSession>;
   updateSession: (id: string, updates: Partial<CreateConsumptionSession>) => Promise<void>;
   deleteSession: (id: string) => Promise<void>;
   loadSessions: () => Promise<void>;
@@ -65,7 +65,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         },
 
         // Session management actions
-        addSession: async (session: CreateConsumptionSession) => {
+        addSession: async (session: CreateConsumptionSession): Promise<ConsumptionSession> => {
           set({ isSaving: true });
           try {
             const newSession = await storageService.create(session);
@@ -74,6 +74,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
               isSaving: false,
               newlyCreatedSessionId: newSession.id,
             }));
+            return newSession;
           } catch (error) {
             console.error('Failed to add session:', error);
             set({ isSaving: false });

@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
 import LocationSelector from '@/components/LocationSelector';
+import ImageUpload from '@/components/ImageUpload';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -102,6 +103,9 @@ const ConsumptionForm: React.FC = () => {
 
   // Track selected location ID for existing locations
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  
+  // Track uploaded images for the current session
+  const [uploadedImages, setUploadedImages] = useState<SessionImage[]>([]);
 
   // Update store when form data changes
   useEffect(() => {
@@ -136,7 +140,24 @@ const ConsumptionForm: React.FC = () => {
         ...(selectedLocationId && { selectedLocationId })
       };
 
-      await addSession(sessionData);
+      const newSession = await addSession(sessionData);
+      
+      // If we have uploaded images, link them to the new session
+      if (uploadedImages.length > 0 && newSession?.id) {
+        try {
+          // Link all temporary images to the actual session
+          for (const image of uploadedImages) {
+            if (image.session_id.startsWith('temp_')) {
+              await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${newSession.id}`, {
+                method: 'PATCH',
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to link images to session:', error);
+          // Don't fail the session creation if image linking fails
+        }
+      }
 
       // Show success notification
       setShowSuccess(true);
@@ -166,6 +187,7 @@ const ConsumptionForm: React.FC = () => {
 
         clearCurrentSession();
         setSelectedLocationId(null);
+        setUploadedImages([]);
       }, 500);
 
     } catch (error) {
@@ -477,6 +499,27 @@ const ConsumptionForm: React.FC = () => {
           <p className="text-xs text-gray-500 mt-1">
             {getQuantityConfig(formData.vessel as VesselType).unit}
           </p>
+        </div>
+
+        {/* Images */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Session Images
+          </label>
+          <ImageUpload
+            sessionId={currentSession?.id || 'temp'}
+            onImageUploaded={(image) => {
+              // Add image to the current session's image list
+              setUploadedImages(prev => [...prev, image]);
+            }}
+            onImageDeleted={(imageId) => {
+              // Remove image from the current session's image list
+              setUploadedImages(prev => prev.filter(img => img.id !== imageId));
+            }}
+            existingImages={uploadedImages}
+            maxImages={5}
+            className="mt-2"
+          />
         </div>
 
         {/* Submit Button */}

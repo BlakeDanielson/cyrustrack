@@ -93,5 +93,34 @@ model ConsumptionSession {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  // Relations
+  images Image[]
+
   @@map("consumption_sessions")
+}
+
+model Image {
+  id String @id @default(cuid())
+  
+  // Session relationship
+  session_id String
+  session ConsumptionSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  
+  // Vercel Blob storage reference
+  blob_url String // Vercel Blob URL
+  filename String
+  file_size Int
+  mime_type String
+  
+  // Image metadata
+  width Int?
+  height Int?
+  alt_text String? // For accessibility
+  
+  // Privacy and metadata
+  created_at DateTime @default(now())
+  
+  // Indexes for performance
+  @@index([session_id])
+  @@map("session_images")
 }

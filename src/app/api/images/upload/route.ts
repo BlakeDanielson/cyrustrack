@@ -48,7 +48,22 @@ export async function POST(request: NextRequest) {
 
     // For temporary sessions, we'll store the image without a session_id initially
     // These can be linked to actual sessions later
-    const actualSessionId = sessionId === 'temp' ? null : sessionId;
+    const actualSessionId = sessionId.startsWith('temp_') ? null : sessionId;
+
+    // If we have an actual session ID, verify it exists
+    if (actualSessionId) {
+      const sessionExists = await prisma.consumptionSession.findUnique({
+        where: { id: actualSessionId },
+        select: { id: true }
+      });
+
+      if (!sessionExists) {
+        return NextResponse.json(
+          { error: 'Session not found. Cannot link image to non-existent session.' },
+          { status: 404 }
+        );
+      }
+    }
 
     // Save image metadata to database
     const image = await prisma.image.create({
@@ -141,6 +156,19 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(
         { error: 'Both tempSessionId and actualSessionId are required' },
         { status: 400 }
+      );
+    }
+
+    // Verify the actual session exists
+    const sessionExists = await prisma.consumptionSession.findUnique({
+      where: { id: actualSessionId },
+      select: { id: true }
+    });
+
+    if (!sessionExists) {
+      return NextResponse.json(
+        { error: 'Target session does not exist' },
+        { status: 404 }
       );
     }
 

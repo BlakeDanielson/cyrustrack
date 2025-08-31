@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useMemo } from 'react';
-import { BarChart3, Clock, Leaf, MapPin, Settings as SettingsIcon, NotebookPen, LayoutDashboard } from 'lucide-react';
+import { BarChart3, Clock, Leaf, Settings as SettingsIcon, NotebookPen, LayoutDashboard } from 'lucide-react';
 import ClientInitializer from '@/components/ClientInitializer';
 
 type AltLayoutProps = {

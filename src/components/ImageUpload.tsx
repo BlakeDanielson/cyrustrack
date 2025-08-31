@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
+import { Camera, Upload, X } from 'lucide-react';
 import { SessionImage } from '@/types/consumption';
 
 interface ImageUploadProps {
@@ -97,7 +98,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       }
 
       onImageDeleted(imageId);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to delete image:', error);
       setError('Failed to delete image');
     }
   };
@@ -129,9 +131,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {existingImages.map((image) => (
             <div key={image.id} className="relative group">
-              <img
+              <Image
                 src={image.blob_url}
                 alt={image.alt_text || image.filename}
+                width={96}
+                height={96}
                 className="w-full h-24 object-cover rounded-lg border border-gray-200"
               />
               <button

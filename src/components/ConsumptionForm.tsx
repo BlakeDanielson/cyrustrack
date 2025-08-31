@@ -11,7 +11,8 @@ import {
   getQuantityConfig,
   createQuantityValue,
   VesselType,
-  FlowerSize
+  FlowerSize,
+  SessionImage
 } from '@/types/consumption';
 import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
@@ -507,7 +508,7 @@ const ConsumptionForm: React.FC = () => {
             Session Images
           </label>
           <ImageUpload
-            sessionId={currentSession?.id || 'temp'}
+            sessionId={`temp_${Date.now()}`}
             onImageUploaded={(image) => {
               // Add image to the current session's image list
               setUploadedImages(prev => [...prev, image]);

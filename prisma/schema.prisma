@@ -102,9 +102,9 @@ model ConsumptionSession {
 model Image {
   id String @id @default(cuid())
   
-  // Session relationship
-  session_id String
-  session ConsumptionSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  // Session relationship (optional for temporary images)
+  session_id String?
+  session ConsumptionSession? @relation(fields: [session_id], references: [id], onDelete: Cascade)
   
   // Vercel Blob storage reference
   blob_url String // Vercel Blob URL

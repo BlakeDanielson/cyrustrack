@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
       addRandomSuffix: true, // Prevents filename conflicts
     });
 
-    // For temporary sessions (like 'temp'), we'll store the image with a temporary session ID
+    // For temporary sessions, we'll store the image without a session_id initially
     // These can be linked to actual sessions later
-    const actualSessionId = sessionId === 'temp' ? `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` : sessionId;
+    const actualSessionId = sessionId === 'temp' ? null : sessionId;
 
     // Save image metadata to database
     const image = await prisma.image.create({
@@ -144,10 +144,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Update all images with the temporary session ID to use the actual session ID
+    // Update all images with null session_id (temporary images) to use the actual session ID
     const updatedImages = await prisma.image.updateMany({
       where: {
-        session_id: tempSessionId,
+        session_id: null, // Temporary images have null session_id
       },
       data: {
         session_id: actualSessionId,

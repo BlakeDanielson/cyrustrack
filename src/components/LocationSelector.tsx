@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Clock, Star, Users } from 'lucide-react';
-import LocationAutocomplete from './LocationAutocomplete';
-import InteractiveLocationMap from './InteractiveLocationMap';
+import { Plus, Search, Clock, Star, Users, MapPin } from 'lucide-react';
+import MapLocationPicker from './MapLocationPicker';
 
 interface Location {
   id: string;
@@ -298,26 +297,27 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         </div>
       )}
 
-      {/* New Location Selection */}
+      {/* New Location Selection - Map First Experience */}
       {mode === 'new' && (
         <div className="space-y-4">
-          <LocationAutocomplete
-            value={value}
-            onLocationSelect={handleNewLocationSelect}
-            placeholder="Start typing an address or place name..."
-            required={required}
+          <MapLocationPicker
+            onLocationSelect={(location, coordinates) => {
+              handleNewLocationSelect(location, coordinates);
+            }}
+            height="320px"
           />
-
-          {/* Interactive Map for New Location */}
-          {latitude && longitude && (
-            <InteractiveLocationMap
-              latitude={latitude}
-              longitude={longitude}
-              onLocationChange={(lat, lng) => {
-                handleNewLocationSelect(value, { lat, lng });
-              }}
-              height="250px"
-            />
+          
+          {/* Optional custom name input */}
+          {value && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-green-800">Location Selected</p>
+                  <p className="text-xs text-green-700 mt-0.5 break-words">{value}</p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}

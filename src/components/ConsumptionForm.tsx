@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Calendar, Clock, MapPin, Cannabis, Save } from 'lucide-react';
+import { Calendar, Clock, MapPin, Cannabis, Save, History } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import {
   ConsumptionFormData,
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
 import LocationSelector from '@/components/LocationSelector';
 import ImageUpload from '@/components/ImageUpload';
+import LastSessionModal from '@/components/LastSessionModal';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -75,10 +76,12 @@ const ConsumptionForm: React.FC = () => {
     clearCurrentSession,
     isSaving,
     preferences,
-    setActiveView
+    setActiveView,
+    sessions
   } = useConsumptionStore();
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showLastSession, setShowLastSession] = useState(false);
 
   // Initialize form with default values
   const [formData, setFormData] = useState<ConsumptionFormData>({
@@ -208,6 +211,20 @@ const ConsumptionForm: React.FC = () => {
       <div className="flex items-center gap-2 mb-6">
         <Cannabis className="h-6 w-6 text-green-600" />
         <h1 className="text-2xl font-bold text-gray-900">Log Consumption Session</h1>
+        <button
+          type="button"
+          onClick={() => setShowLastSession(true)}
+          disabled={sessions.length === 0}
+          className={cn(
+            "ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+            sessions.length === 0
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-green-100 text-green-700 hover:bg-green-200"
+          )}
+        >
+          <History className="h-4 w-4" />
+          Last Session
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -547,6 +564,13 @@ const ConsumptionForm: React.FC = () => {
           duration={2000}
         />
       )}
+
+      {/* Last Session Modal */}
+      <LastSessionModal
+        isOpen={showLastSession}
+        onClose={() => setShowLastSession(false)}
+        session={sessions.length > 0 ? sessions[0] : null}
+      />
     </div>
   );
 };

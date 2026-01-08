@@ -30,13 +30,15 @@ interface CSVRow {
 // Vessel mapping from CSV format to app format
 const VESSEL_MAPPING: Record<string, VesselType> = {
   'Classic Bubbler': 'Bong',
-  'Pen_Cyrus Mortazavi': 'Vape Pen',
+  'Pen_Cyrus Mortazavi': 'Pen',
   'Joint': 'Joint',
   'Pipe': 'Pipe',
   'Bong': 'Bong',
-  'Vape Pen': 'Vape Pen',
+  'Vape Pen': 'Pen',
+  'Pen': 'Pen',
   'Dab Rig': 'Dab Rig',
-  'Edibles': 'Edibles',
+  'Edibles': 'Edible',
+  'Edible': 'Edible',
   'Tincture': 'Tincture'
 };
 
@@ -116,7 +118,7 @@ function parseDatetime(whenStr: string): { date: string; time: string } {
 
 // Convert CSV row to ConsumptionSession
 export function convertCSVRowToSession(row: CSVRow): CreateConsumptionSession {
-  const vessel = VESSEL_MAPPING[row.Vessel] || 'Other';
+  const vesselCategory = VESSEL_MAPPING[row.Vessel] || 'Other';
   const { date, time } = parseDatetime(row.When);
   
   // Build location string
@@ -141,7 +143,8 @@ export function convertCSVRowToSession(row: CSVRow): CreateConsumptionSession {
     time,
     location,
     who_with: whoWith,
-    vessel,
+    vessel_category: vesselCategory,
+    vessel: row.Vessel || vesselCategory, // Use original CSV vessel name, fall back to category
     accessory_used: ACCESSORY_MAPPING[row['Accessory Used']] || 'Other',
     my_vessel: parseBoolean(row['Your Vessel']),
     my_substance: parseBoolean(row['Your Substance']),
@@ -154,7 +157,7 @@ export function convertCSVRowToSession(row: CSVRow): CreateConsumptionSession {
     kief: parseBoolean(row.Kief),
     concentrate: parseBoolean(row.Concentrate),
     lavender: parseBoolean(row.Lavendar), // Note: keeping original spelling
-    quantity: parseQuantity(row.Quantity, vessel),
+    quantity: parseQuantity(row.Quantity, vesselCategory),
     comments: row.Comments || undefined
   };
 }

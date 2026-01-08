@@ -38,7 +38,7 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
 }) => {
   const config = getQuantityConfig(vesselCategory);
 
-  if (config.type === 'size_category' && 'options' in config) {
+  if (config.type === 'size_category' && config.options) {
     return (
       <select
         required={required}
@@ -143,9 +143,11 @@ const ConsumptionForm: React.FC = () => {
       if (field === 'vessel_category') {
         const newCategory = value as VesselCategory;
         const newConfig = getQuantityConfig(newCategory);
-        newData.quantity = newConfig.type === 'decimal'
-          ? ('placeholder' in newConfig ? parseFloat(newConfig.placeholder) : 0)
-          : ('options' in newConfig && newConfig.options ? newConfig.options[0] : 0);
+        if (newConfig.type === 'size_category' && newConfig.options) {
+          newData.quantity = newConfig.options[0] as FlowerSize;
+        } else {
+          newData.quantity = newConfig.placeholder ? parseFloat(newConfig.placeholder) : 0;
+        }
       }
 
       return newData;
@@ -523,7 +525,7 @@ const ConsumptionForm: React.FC = () => {
             required
           />
           <p className="text-xs text-gray-500 mt-1">
-            {getQuantityConfig(formData.vessel as VesselType).unit}
+            {getQuantityConfig(formData.vessel_category as VesselCategory).unit}
           </p>
         </div>
 

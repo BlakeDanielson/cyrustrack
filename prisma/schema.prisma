@@ -63,7 +63,8 @@ model ConsumptionSession {
   location_id       String?
   location_ref      Location? @relation(fields: [location_id], references: [id])
   who_with          String
-  vessel            String
+  vessel_category   String    // Main category: Bong, Pipe, Joint, Pen, Edible, etc.
+  vessel            String    // Specific item: Simba, Classic Bubbler, Vibes: 1.25...
   accessory_used    String
   my_vessel         Boolean @default(true)
   my_substance      Boolean @default(true)

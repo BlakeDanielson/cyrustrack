@@ -59,7 +59,8 @@ export interface ConsumptionSession {
   location_ref?: LocationReference; // Full location relationship (when available)
   
   who_with: string;
-  vessel: string;
+  vessel_category: string;  // Main category: Bong, Pipe, Joint, Pen, etc.
+  vessel: string;           // Specific item: Simba, Classic Bubbler, etc.
   accessory_used: string;
   my_vessel: boolean;
   my_substance: boolean;
@@ -93,42 +94,50 @@ export interface ConsumptionSession {
 // Type for creating new consumption sessions (without generated fields)
 export type CreateConsumptionSession = Omit<ConsumptionSession, 'id' | 'created_at' | 'updated_at'>;
 
-// Vessel types (devices for consumption)
-export const VESSEL_TYPES = [
+// Vessel categories (main types of consumption devices)
+export const VESSEL_CATEGORIES = [
+  'Bong',
   'Joint',
   'Pipe',
-  'Bong',
-  'Vape Pen',
-  'Dab Rig',
-  'Edibles',
+  'Pen',
+  'Edible',
   'Tincture',
+  'Pre-roll',
+  'Blunt',
+  'Dab Rig',
   'Other'
 ] as const;
 
-export type VesselType = typeof VESSEL_TYPES[number];
+export type VesselCategory = typeof VESSEL_CATEGORIES[number];
 
-// Quantity configuration for each vessel type
-export const VESSEL_QUANTITY_CONFIG = {
+// Legacy type alias for backward compatibility
+export const VESSEL_TYPES = VESSEL_CATEGORIES;
+export type VesselType = VesselCategory;
+
+// Quantity configuration for each vessel category
+export const VESSEL_QUANTITY_CONFIG: Record<VesselCategory, { type: QuantityType; unit: string; placeholder?: string; step?: number; options?: readonly string[] }> = {
+  'Bong': { type: 'size_category' as QuantityType, unit: 'bowl size', options: FLOWER_SIZES },
   'Joint': { type: 'decimal' as QuantityType, unit: 'joint portion', placeholder: '0.25', step: 0.01 },
   'Pipe': { type: 'size_category' as QuantityType, unit: 'bowl size', options: FLOWER_SIZES },
-  'Bong': { type: 'size_category' as QuantityType, unit: 'bowl size', options: FLOWER_SIZES },
-  'Vape Pen': { type: 'decimal' as QuantityType, unit: 'puffs', placeholder: '5', step: 1 },
-  'Dab Rig': { type: 'decimal' as QuantityType, unit: 'dabs', placeholder: '1', step: 0.5 },
-  'Edibles': { type: 'milligrams' as QuantityType, unit: 'mg THC', placeholder: '10', step: 1 },
+  'Pen': { type: 'decimal' as QuantityType, unit: 'puffs', placeholder: '5', step: 1 },
+  'Edible': { type: 'milligrams' as QuantityType, unit: 'mg THC', placeholder: '10', step: 1 },
   'Tincture': { type: 'milligrams' as QuantityType, unit: 'mg THC', placeholder: '5', step: 1 },
+  'Pre-roll': { type: 'decimal' as QuantityType, unit: 'joint portion', placeholder: '0.5', step: 0.1 },
+  'Blunt': { type: 'decimal' as QuantityType, unit: 'blunt portion', placeholder: '0.25', step: 0.01 },
+  'Dab Rig': { type: 'decimal' as QuantityType, unit: 'dabs', placeholder: '1', step: 0.5 },
   'Other': { type: 'decimal' as QuantityType, unit: 'units', placeholder: '1', step: 0.1 }
-} as const;
+};
 
 // Utility functions for quantity handling
-export const getQuantityConfig = (vessel: VesselType) => {
-  return VESSEL_QUANTITY_CONFIG[vessel] || VESSEL_QUANTITY_CONFIG['Other'];
+export const getQuantityConfig = (vesselCategory: VesselCategory) => {
+  return VESSEL_QUANTITY_CONFIG[vesselCategory] || VESSEL_QUANTITY_CONFIG['Other'];
 };
 
 export const createQuantityValue = (
-  vessel: VesselType,
+  vesselCategory: VesselCategory,
   amount: number | FlowerSize
 ): QuantityValue => {
-  const config = getQuantityConfig(vessel);
+  const config = getQuantityConfig(vesselCategory);
 
   if (config.type === 'size_category') {
     const sizeIndex = FLOWER_SIZES.indexOf(amount as FlowerSize);
@@ -154,25 +163,11 @@ export const formatQuantity = (quantity: QuantityValue): string => {
 };
 
 // Migration helper
-export const migrateLegacyQuantity = (vessel: VesselType, legacyQuantity: number): QuantityValue => {
-  return createQuantityValue(vessel, legacyQuantity);
+export const migrateLegacyQuantity = (vesselCategory: VesselCategory, legacyQuantity: number): QuantityValue => {
+  return createQuantityValue(vesselCategory, legacyQuantity);
 };
 
-// Common accessories
-export const ACCESSORY_TYPES = [
-  'None',
-  'Grinder',
-  'Rolling Papers',
-  'Lighter',
-  'Torch',
-  'Dab Tool',
-  'Carb Cap',
-  'Glass Screen',
-  'Filter Tips',
-  'Other'
-] as const;
-
-export type AccessoryType = typeof ACCESSORY_TYPES[number];
+// Note: Accessories are now loaded dynamically from the database via /api/sessions/accessories
 
 // Form state for consumption logging (with simplified quantity input)
 export interface ConsumptionFormData extends Omit<CreateConsumptionSession, 'quantity'> {

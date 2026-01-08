@@ -197,7 +197,10 @@ const ConsumptionHistory: React.FC = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="capitalize">{session.vessel}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded font-medium">{session.vessel_category || 'Other'}</span>
+                          <span className="capitalize">{session.vessel}</span>
+                        </span>
                         <span>•</span>
                         <span>Quantity: {formatQuantity(session.quantity)}</span>
                         {session.thc_percentage && (

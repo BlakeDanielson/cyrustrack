@@ -37,6 +37,7 @@ function convertPrismaToSession(prismaSession: SessionWithLocation): Consumption
     longitude: prismaSession.location_ref?.longitude ?? prismaSession.longitude ?? undefined,
     location_ref,
     who_with: prismaSession.who_with,
+    vessel_category: prismaSession.vessel_category || 'Other',
     vessel: prismaSession.vessel,
     accessory_used: prismaSession.accessory_used,
     my_vessel: prismaSession.my_vessel,
@@ -204,6 +205,7 @@ async function convertSessionToPrismaInput(session: CreateConsumptionSession & {
     latitude: session.latitude,
     longitude: session.longitude,
     who_with: session.who_with,
+    vessel_category: session.vessel_category || 'Other',
     vessel: session.vessel,
     accessory_used: session.accessory_used,
     my_vessel: session.my_vessel,
@@ -293,6 +295,7 @@ export const databaseService = {
       if (updates.latitude !== undefined) updateData.latitude = updates.latitude;
       if (updates.longitude !== undefined) updateData.longitude = updates.longitude;
       if (updates.who_with !== undefined) updateData.who_with = updates.who_with;
+      if (updates.vessel_category !== undefined) updateData.vessel_category = updates.vessel_category;
       if (updates.vessel !== undefined) updateData.vessel = updates.vessel;
       if (updates.accessory_used !== undefined) updateData.accessory_used = updates.accessory_used;
       if (updates.my_vessel !== undefined) updateData.my_vessel = updates.my_vessel;

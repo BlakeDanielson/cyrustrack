@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields
-    const requiredFields = ['date', 'time', 'location', 'vessel', 'strain_name', 'quantity'];
+    const requiredFields = ['date', 'time', 'location', 'vessel_category', 'vessel', 'strain_name', 'quantity'];
     const missingFields = requiredFields.filter(field => !body[field]);
     
     if (missingFields.length > 0) {
@@ -65,8 +65,9 @@ export async function POST(request: NextRequest) {
       latitude: body.latitude,
       longitude: body.longitude,
       who_with: body.who_with || '',
+      vessel_category: body.vessel_category,
       vessel: body.vessel,
-      accessory_used: body.accessory_used || 'None',
+      accessory_used: body.accessory_used || 'N/A',
       my_vessel: body.my_vessel ?? true,
       my_substance: body.my_substance ?? true,
       strain_name: body.strain_name,
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
       lavender: body.lavender ?? false,
       quantity: body.quantity,
       quantity_legacy: body.quantity_legacy,
+      comments: body.comments || undefined,
     };
 
     const newSession = await databaseService.create(sessionData);

@@ -6,11 +6,10 @@ import { Calendar, Clock, MapPin, Cannabis, Save, History } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import {
   ConsumptionFormData,
-  VESSEL_TYPES,
-  ACCESSORY_TYPES,
+  VESSEL_CATEGORIES,
   getQuantityConfig,
   createQuantityValue,
-  VesselType,
+  VesselCategory,
   FlowerSize,
   SessionImage
 } from '@/types/consumption';
@@ -19,22 +18,25 @@ import SuccessNotification from '@/components/ui/SuccessNotification';
 import LocationSelector from '@/components/LocationSelector';
 import ImageUpload from '@/components/ImageUpload';
 import LastSessionModal from '@/components/LastSessionModal';
+import WhoWithSelector from '@/components/WhoWithSelector';
+import AccessorySelector from '@/components/AccessorySelector';
+import VesselSelector from '@/components/VesselSelector';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
-  vessel: VesselType;
+  vesselCategory: VesselCategory;
   value: number | FlowerSize;
   onChange: (value: number | FlowerSize) => void;
   required?: boolean;
 }
 
 const QuantityInput: React.FC<QuantityInputProps> = ({
-  vessel,
+  vesselCategory,
   value,
   onChange,
   required = false
 }) => {
-  const config = getQuantityConfig(vessel);
+  const config = getQuantityConfig(vesselCategory);
 
   if (config.type === 'size_category' && 'options' in config) {
     return (
@@ -89,8 +91,9 @@ const ConsumptionForm: React.FC = () => {
     time: format(new Date(), 'HH:mm'),
     location: preferences.defaultLocation || '',
     who_with: '',
-    vessel: 'Joint',
-    accessory_used: 'None',
+    vessel_category: '',
+    vessel: '',
+    accessory_used: 'N/A',
     my_vessel: true,
     my_substance: true,
     strain_name: '',
@@ -101,7 +104,8 @@ const ConsumptionForm: React.FC = () => {
     kief: false,
     concentrate: false,
     lavender: false,
-    quantity: 0.25, // Default for joint
+    quantity: 1,
+    comments: '',
     ...currentSession
   });
 
@@ -116,13 +120,29 @@ const ConsumptionForm: React.FC = () => {
     updateCurrentSession(formData);
   }, [formData, updateCurrentSession]);
 
+  // Pre-populate strain, THC, state_purchased, purchased_legally from most recent session
+  useEffect(() => {
+    if (sessions.length > 0 && !formData.strain_name) {
+      // Sessions are already sorted by created_at desc, so sessions[0] is most recent
+      const recent = sessions[0];
+      setFormData(prev => ({
+        ...prev,
+        strain_name: prev.strain_name || recent.strain_name || '',
+        thc_percentage: prev.thc_percentage || recent.thc_percentage || 0,
+        state_purchased: prev.state_purchased || recent.state_purchased || '',
+        purchased_legally: recent.purchased_legally ?? true,
+      }));
+    }
+  }, [sessions.length]); // Only run when sessions array length changes (initial load)
+
   const handleInputChange = (field: keyof ConsumptionFormData, value: string | number | boolean | FlowerSize | undefined) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
 
-      // Reset quantity to appropriate default when vessel changes
-      if (field === 'vessel') {
-        const newConfig = getQuantityConfig(value as VesselType);
+      // Reset quantity to appropriate default when vessel category changes
+      if (field === 'vessel_category') {
+        const newCategory = value as VesselCategory;
+        const newConfig = getQuantityConfig(newCategory);
         newData.quantity = newConfig.type === 'decimal'
           ? ('placeholder' in newConfig ? parseFloat(newConfig.placeholder) : 0)
           : ('options' in newConfig && newConfig.options ? newConfig.options[0] : 0);
@@ -139,7 +159,7 @@ const ConsumptionForm: React.FC = () => {
       // Convert form data to session data with proper quantity format
       const sessionData = {
         ...formData,
-        quantity: createQuantityValue(formData.vessel as VesselType, formData.quantity),
+        quantity: createQuantityValue(formData.vessel_category as VesselCategory, formData.quantity),
         // Include selected location ID if using existing location
         ...(selectedLocationId && { selectedLocationId })
       };
@@ -166,27 +186,29 @@ const ConsumptionForm: React.FC = () => {
       // Show success notification
       setShowSuccess(true);
 
-      // Reset form after a short delay
+      // Reset form after a short delay, preserving strain/THC/purchase info from the session we just created
       setTimeout(() => {
-        const defaultQuantity = getQuantityConfig('Joint').type === 'decimal' ? 0.25 : 0;
         setFormData({
           date: format(new Date(), 'yyyy-MM-dd'),
           time: format(new Date(), 'HH:mm'),
           location: preferences.defaultLocation || '',
           who_with: '',
-          vessel: 'Joint',
-          accessory_used: 'None',
+          vessel_category: '',
+          vessel: '',
+          accessory_used: 'N/A',
           my_vessel: true,
           my_substance: true,
-          strain_name: '',
-          thc_percentage: 0,
-          purchased_legally: true,
-          state_purchased: '',
+          // Preserve these from the session we just submitted
+          strain_name: formData.strain_name,
+          thc_percentage: formData.thc_percentage,
+          purchased_legally: formData.purchased_legally,
+          state_purchased: formData.state_purchased,
           tobacco: false,
           kief: false,
           concentrate: false,
           lavender: false,
-          quantity: defaultQuantity
+          quantity: 1,
+          comments: ''
         });
 
         clearCurrentSession();
@@ -287,50 +309,36 @@ const ConsumptionForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Who With
           </label>
-          <input
-            type="text"
-            placeholder="e.g., Solo, Friends, Partner (leave blank if alone)"
+          <WhoWithSelector
             value={formData.who_with}
-            onChange={(e) => handleInputChange('who_with', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            onChange={(value) => handleInputChange('who_with', value)}
+            placeholder="Select or type a name (leave blank if alone)"
           />
         </div>
 
-        {/* Vessel and Accessory */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Vessel *
-            </label>
-            <select
-              required
-              value={formData.vessel}
-              onChange={(e) => handleInputChange('vessel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              {VESSEL_TYPES.map(vessel => (
-                <option key={vessel} value={vessel}>
-                  {vessel}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Accessory Used
-            </label>
-            <select
-              value={formData.accessory_used}
-              onChange={(e) => handleInputChange('accessory_used', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              {ACCESSORY_TYPES.map(accessory => (
-                <option key={accessory} value={accessory}>
-                  {accessory}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Vessel Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Vessel *
+          </label>
+          <VesselSelector
+            category={formData.vessel_category}
+            vessel={formData.vessel}
+            onCategoryChange={(cat) => handleInputChange('vessel_category', cat)}
+            onVesselChange={(v) => handleInputChange('vessel', v)}
+          />
+        </div>
+
+        {/* Accessory */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Accessory Used
+          </label>
+          <AccessorySelector
+            value={formData.accessory_used}
+            onChange={(value) => handleInputChange('accessory_used', value)}
+            placeholder="Select accessory..."
+          />
         </div>
 
         {/* Ownership */}
@@ -509,7 +517,7 @@ const ConsumptionForm: React.FC = () => {
             Quantity *
           </label>
           <QuantityInput
-            vessel={formData.vessel as VesselType}
+            vesselCategory={formData.vessel_category as VesselCategory}
             value={formData.quantity}
             onChange={(value) => handleInputChange('quantity', value)}
             required
@@ -517,6 +525,20 @@ const ConsumptionForm: React.FC = () => {
           <p className="text-xs text-gray-500 mt-1">
             {getQuantityConfig(formData.vessel as VesselType).unit}
           </p>
+        </div>
+
+        {/* Comments */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Comments
+          </label>
+          <textarea
+            value={formData.comments || ''}
+            onChange={(e) => handleInputChange('comments', e.target.value)}
+            placeholder="Add any notes about this session..."
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+          />
         </div>
 
         {/* Images */}

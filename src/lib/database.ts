@@ -47,7 +47,7 @@ function convertPrismaToSession(prismaSession: SessionWithLocation): Consumption
     thc_percentage: prismaSession.thc_percentage ?? undefined,
     purchased_legally: prismaSession.purchased_legally,
     state_purchased: prismaSession.state_purchased ?? undefined,
-    tobacco: prismaSession.tobacco,
+    tobacco: prismaSession.tobacco ?? undefined,
     kief: prismaSession.kief,
     lavender: prismaSession.lavender,
     concentrate: prismaSession.concentrate,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Package, Search, ChevronDown, Check, Plus, ChevronRight, X } from 'lucide-react';
-import { VESSEL_CATEGORIES, VesselCategory } from '@/types/consumption';
+import { VESSEL_CATEGORIES } from '@/types/consumption';
 
 interface VesselEntry {
   name: string;

@@ -288,7 +288,7 @@ const SessionMap: React.FC<SessionMapProps> = ({
                     <div className="flex flex-wrap gap-1">
                       {popupInfo.session.tobacco && (
                         <span className="px-1.5 py-0.5 bg-orange-100 text-orange-800 text-xs rounded">
-                          Tobacco
+                          {popupInfo.session.tobacco}
                         </span>
                       )}
                       {popupInfo.session.kief && (

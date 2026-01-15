@@ -22,6 +22,7 @@ import LastSessionModal from '@/components/LastSessionModal';
 import WhoWithSelector from '@/components/WhoWithSelector';
 import AccessorySelector from '@/components/AccessorySelector';
 import VesselSelector from '@/components/VesselSelector';
+import TobaccoSelector from '@/components/TobaccoSelector';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -101,7 +102,7 @@ const ConsumptionForm: React.FC = () => {
     thc_percentage: 0,
     purchased_legally: true,
     state_purchased: '',
-    tobacco: false,
+    tobacco: undefined,
     kief: false,
     concentrate: false,
     lavender: false,
@@ -227,7 +228,7 @@ const ConsumptionForm: React.FC = () => {
           thc_percentage: formData.thc_percentage,
           purchased_legally: formData.purchased_legally,
           state_purchased: formData.state_purchased,
-          tobacco: false,
+          tobacco: undefined,
           kief: false,
           concentrate: false,
           lavender: false,
@@ -500,21 +501,39 @@ const ConsumptionForm: React.FC = () => {
           )}
         </div>
 
+        {/* Quantity */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Quantity *
+          </label>
+          <QuantityInput
+            vesselCategory={formData.vessel_category as VesselCategory}
+            value={formData.quantity}
+            onChange={(value) => handleInputChange('quantity', value)}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {getQuantityConfig(formData.vessel_category as VesselCategory).unit}
+          </p>
+        </div>
+
         {/* Additives */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Additives
           </label>
-          <div className="grid grid-cols-3 gap-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.tobacco}
-                onChange={(e) => handleInputChange('tobacco', e.target.checked)}
-                className="mr-2"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Tobacco Type
+              </label>
+              <TobaccoSelector
+                value={formData.tobacco}
+                onChange={(value) => handleInputChange('tobacco', value)}
               />
-              Tobacco
-            </label>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -534,22 +553,6 @@ const ConsumptionForm: React.FC = () => {
               Concentrate
             </label>
           </div>
-        </div>
-
-        {/* Quantity */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Quantity *
-          </label>
-          <QuantityInput
-            vesselCategory={formData.vessel_category as VesselCategory}
-            value={formData.quantity}
-            onChange={(value) => handleInputChange('quantity', value)}
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            {getQuantityConfig(formData.vessel_category as VesselCategory).unit}
-          </p>
         </div>
 
         {/* Comments */}

@@ -138,6 +138,26 @@ function parseBoolean(value: string): boolean {
 }
 
 /**
+ * Parse tobacco field from CSV - converts Y/N to string or uses actual value
+ */
+function parseTobacco(value: string): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  const lower = trimmed.toLowerCase();
+  
+  // Convert Y/N/Yes/No to Unknown or null
+  if (lower === 'n' || lower === 'no' || lower === 'false') {
+    return null;
+  }
+  if (lower === 'y' || lower === 'yes' || lower === 'true') {
+    return 'Unknown';
+  }
+  
+  // Return the actual tobacco type from CSV
+  return trimmed;
+}
+
+/**
  * Parse THC percentage
  */
 function parseThcPercentage(thcString: string): number | undefined {
@@ -237,7 +257,7 @@ async function transformCSVRow(row: CSVRow, rowIndex: number): Promise<Record<st
     thc_percentage: parseThcPercentage(row['THC %']),
     purchased_legally: parseBoolean(row['Legal Product_Purchased?']),
     state_purchased: row['State Purchased?'] || null,
-    tobacco: parseBoolean(row.Tobacco),
+    tobacco: parseTobacco(row.Tobacco),
     kief: parseBoolean(row.Kief),
     concentrate: parseBoolean(row.Concentrate),
     lavender: parseBoolean(row.Lavendar),

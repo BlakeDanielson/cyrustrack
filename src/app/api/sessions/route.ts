@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       thc_percentage: body.thc_percentage,
       purchased_legally: body.purchased_legally ?? true,
       state_purchased: body.state_purchased,
-      tobacco: body.tobacco ?? false,
+      tobacco: body.tobacco || undefined,
       kief: body.kief ?? false,
       concentrate: body.concentrate ?? false,
       lavender: body.lavender ?? false,

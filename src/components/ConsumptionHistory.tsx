@@ -240,7 +240,7 @@ const ConsumptionHistory: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     {session.tobacco && (
                       <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                        Tobacco
+                        {session.tobacco}
                       </span>
                     )}
                     {session.kief && (

@@ -135,6 +135,18 @@ export function convertCSVRowToSession(row: CSVRow): CreateConsumptionSession {
   // Parse boolean values
   const parseBoolean = (value: string) => value === 'Y' || value === 'Yes' || value === 'true';
   
+  // Parse tobacco field - convert Y/N to string or use actual value
+  const parseTobacco = (value: string): string | undefined => {
+    if (!value || value === 'N' || value === 'No' || value === 'false') {
+      return undefined;
+    }
+    if (value === 'Y' || value === 'Yes' || value === 'true') {
+      return 'Unknown';
+    }
+    // Return the actual tobacco type from CSV
+    return value.trim();
+  };
+  
   // Parse THC percentage
   const thcPercentage = row['THC %'] ? parseFloat(row['THC %']) : undefined;
   
@@ -153,7 +165,7 @@ export function convertCSVRowToSession(row: CSVRow): CreateConsumptionSession {
     thc_percentage: thcPercentage,
     purchased_legally: parseBoolean(row['Legal Product_Purchased?']),
     state_purchased: row['State Purchased?'] || undefined,
-    tobacco: parseBoolean(row.Tobacco),
+    tobacco: parseTobacco(row.Tobacco),
     kief: parseBoolean(row.Kief),
     concentrate: parseBoolean(row.Concentrate),
     lavender: parseBoolean(row.Lavendar), // Note: keeping original spelling

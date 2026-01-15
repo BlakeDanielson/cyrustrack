@@ -72,7 +72,7 @@ model ConsumptionSession {
   thc_percentage    Float?
   purchased_legally Boolean @default(true)
   state_purchased   String?
-  tobacco           Boolean @default(false)
+  tobacco           String? // Can be "None", "Lucky Strike Red 100s Tobacco", "American Sport Cigs Blue", "American Spirit Menthol", or custom
   kief              Boolean @default(false)
   concentrate       Boolean @default(false)
   lavender          Boolean @default(false)

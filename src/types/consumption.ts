@@ -69,7 +69,7 @@ export interface ConsumptionSession {
   thc_percentage?: number;
   purchased_legally: boolean;
   state_purchased?: string;
-  tobacco: boolean;
+  tobacco?: string; // Tobacco type: None, Lucky Strike Red 100s Tobacco, American Sport Cigs Blue, American Spirit Menthol, or custom
   kief: boolean;
   concentrate: boolean;
   lavender: boolean;

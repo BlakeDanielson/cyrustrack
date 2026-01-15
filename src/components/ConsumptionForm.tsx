@@ -9,6 +9,7 @@ import {
   VESSEL_CATEGORIES,
   getQuantityConfig,
   createQuantityValue,
+  getAccessoryConfig,
   VesselCategory,
   FlowerSize,
   SessionImage
@@ -139,14 +140,35 @@ const ConsumptionForm: React.FC = () => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
 
-      // Reset quantity to appropriate default when vessel category changes
+      // Reset quantity and accessory to appropriate defaults when vessel category changes
       if (field === 'vessel_category') {
         const newCategory = value as VesselCategory;
-        const newConfig = getQuantityConfig(newCategory);
-        if (newConfig.type === 'size_category' && newConfig.options) {
-          newData.quantity = newConfig.options[0] as FlowerSize;
+        
+        // Reset quantity based on new category
+        const newQuantityConfig = getQuantityConfig(newCategory);
+        if (newQuantityConfig.type === 'size_category' && newQuantityConfig.options) {
+          newData.quantity = newQuantityConfig.options[0] as FlowerSize;
         } else {
-          newData.quantity = newConfig.placeholder ? parseFloat(newConfig.placeholder) : 0;
+          newData.quantity = newQuantityConfig.placeholder ? parseFloat(newQuantityConfig.placeholder) : 0;
+        }
+        
+        // Reset accessory based on new category
+        const newAccessoryConfig = getAccessoryConfig(newCategory);
+        if (newAccessoryConfig.allowNA) {
+          newData.accessory_used = 'N/A';
+        } else {
+          // If N/A not allowed, clear it so user must select
+          newData.accessory_used = '';
+        }
+      }
+
+      // Reset accessory when the specific vessel changes (different vessel may have different accessories)
+      if (field === 'vessel') {
+        const categoryConfig = getAccessoryConfig(prev.vessel_category as VesselCategory);
+        if (categoryConfig.allowNA) {
+          newData.accessory_used = 'N/A';
+        } else {
+          newData.accessory_used = '';
         }
       }
 
@@ -339,12 +361,13 @@ const ConsumptionForm: React.FC = () => {
           <AccessorySelector
             value={formData.accessory_used}
             onChange={(value) => handleInputChange('accessory_used', value)}
-            placeholder="Select accessory..."
+            vessel={formData.vessel}
+            vesselCategory={formData.vessel_category as VesselCategory}
           />
         </div>
 
         {/* Ownership */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               My Vessel

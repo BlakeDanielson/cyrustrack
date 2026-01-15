@@ -128,6 +128,51 @@ export const VESSEL_QUANTITY_CONFIG: Record<VesselCategory, { type: QuantityType
   'Other': { type: 'decimal' as QuantityType, unit: 'units', placeholder: '1', step: 0.1 }
 };
 
+// Accessory configuration for each vessel category
+// Maps vessel types to their compatible accessory patterns
+export interface VesselAccessoryConfig {
+  patterns: string[];      // Prefix patterns to match (e.g., "Bowl_", "Filter_")
+  allowNA: boolean;        // Whether N/A is a valid option
+  allowCustom: boolean;    // Whether new accessories can be added
+  placeholder: string;     // Placeholder text for the selector
+}
+
+export const VESSEL_ACCESSORY_CONFIG: Record<VesselCategory, VesselAccessoryConfig> = {
+  'Bong': { patterns: ['Bowl_'], allowNA: true, allowCustom: true, placeholder: 'Select bowl...' },
+  'Pipe': { patterns: ['Bowl_'], allowNA: true, allowCustom: true, placeholder: 'Select bowl...' },
+  'Joint': { patterns: ['Filter_'], allowNA: false, allowCustom: true, placeholder: 'Select filter...' },
+  'Pen': { patterns: [], allowNA: true, allowCustom: false, placeholder: 'N/A' },
+  'Edible': { patterns: ['Gummie', 'Mint', 'Pulled Taffy', 'Drink', 'Chocolate', 'Cookie', 'Brownie'], allowNA: true, allowCustom: true, placeholder: 'Select type...' },
+  'Tincture': { patterns: ['Dropper'], allowNA: true, allowCustom: false, placeholder: 'Dropper' },
+  'Pre-roll': { patterns: ['Filter_'], allowNA: true, allowCustom: true, placeholder: 'Select filter...' },
+  'Blunt': { patterns: ['Filter_'], allowNA: true, allowCustom: true, placeholder: 'Select filter...' },
+  'Dab Rig': { patterns: [], allowNA: true, allowCustom: true, placeholder: 'Select accessory...' },
+  'Other': { patterns: [], allowNA: true, allowCustom: true, placeholder: 'Select accessory...' }
+};
+
+// Utility function to get accessory config for a vessel category
+export const getAccessoryConfig = (vesselCategory: VesselCategory | string): VesselAccessoryConfig => {
+  return VESSEL_ACCESSORY_CONFIG[vesselCategory as VesselCategory] || VESSEL_ACCESSORY_CONFIG['Other'];
+};
+
+// Utility function to check if an accessory is compatible with a vessel category
+export const isAccessoryCompatible = (accessory: string, vesselCategory: VesselCategory | string): boolean => {
+  const config = getAccessoryConfig(vesselCategory);
+  
+  // N/A is compatible if allowed
+  if (accessory === 'N/A' || accessory === 'None') {
+    return config.allowNA;
+  }
+  
+  // If no patterns defined, allow all (for Other, Dab Rig, etc.)
+  if (config.patterns.length === 0) {
+    return true;
+  }
+  
+  // Check if accessory matches any of the allowed patterns
+  return config.patterns.some(pattern => accessory.startsWith(pattern));
+};
+
 // Utility functions for quantity handling
 export const getQuantityConfig = (vesselCategory: VesselCategory) => {
   return VESSEL_QUANTITY_CONFIG[vesselCategory] || VESSEL_QUANTITY_CONFIG['Other'];

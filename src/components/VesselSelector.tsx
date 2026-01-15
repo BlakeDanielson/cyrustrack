@@ -139,22 +139,6 @@ const VesselSelector: React.FC<VesselSelectorProps> = ({
     }
   };
 
-  // Get category icon/emoji
-  const getCategoryEmoji = (cat: string) => {
-    const emojis: Record<string, string> = {
-      'Bong': '🌀',
-      'Joint': '🚬',
-      'Pipe': '🪈',
-      'Pen': '🖊️',
-      'Edible': '🍪',
-      'Tincture': '💧',
-      'Pre-roll': '📦',
-      'Blunt': '🌯',
-      'Dab Rig': '🔥',
-      'Other': '📦'
-    };
-    return emojis[cat] || '📦';
-  };
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -175,7 +159,7 @@ const VesselSelector: React.FC<VesselSelectorProps> = ({
           <div className="flex-1 flex items-center gap-2">
             {category && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                {getCategoryEmoji(category)} {category}
+                {category}
               </span>
             )}
             {vessel && (
@@ -218,7 +202,7 @@ const VesselSelector: React.FC<VesselSelectorProps> = ({
                 ← Back to categories
               </button>
               <div className="mt-1 text-sm font-medium text-gray-700">
-                {getCategoryEmoji(category)} {category}
+                {category}
               </div>
             </div>
           )}
@@ -267,7 +251,6 @@ const VesselSelector: React.FC<VesselSelectorProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{getCategoryEmoji(cat)}</span>
                         <span className="text-sm font-medium text-gray-900">{cat}</span>
                       </div>
                       <div className="flex items-center gap-2">

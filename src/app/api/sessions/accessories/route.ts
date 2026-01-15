@@ -10,9 +10,17 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get('q')?.toLowerCase() || '';
+    const vesselFilter = searchParams.get('vessel') || '';
 
-    // Get all sessions with their accessories
+    // Build the query filter
+    const whereClause: { vessel?: string } = {};
+    if (vesselFilter) {
+      whereClause.vessel = vesselFilter;
+    }
+
+    // Get sessions with their accessories, optionally filtered by vessel
     const sessions = await prisma.consumptionSession.findMany({
+      where: whereClause,
       select: { accessory_used: true }
     });
 
@@ -44,6 +52,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       accessories: entries,
       total: entries.length,
+      vessel: vesselFilter || null,
       success: true
     });
   } catch (error) {

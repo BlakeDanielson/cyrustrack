@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { History, MapPin, Cannabis, Filter, Search } from 'lucide-react';
+import { History, MapPin, Cannabis, Filter, Search, Trash2, Pencil } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import { ConsumptionSession, formatQuantity } from '@/types/consumption';
 import { cn } from '@/lib/utils';
@@ -19,16 +19,32 @@ const ConsumptionHistory: React.FC = () => {
     newlyCreatedSessionId,
     clearNewlyCreatedSessionId,
     setCurrentSession,
-    setActiveView
+    setActiveView,
+    deleteSession
   } = useConsumptionStore();
 
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEditSession = (session: ConsumptionSession) => {
     // Set the current session form data for editing
     setCurrentSession({ ...session, quantity: session.quantity.amount });
     // Navigate to log view
     setActiveView('log');
+  };
+
+  const handleDeleteSession = async (id: string) => {
+    setIsDeleting(true);
+    try {
+      await deleteSession(id);
+      setDeleteConfirmId(null);
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      alert('Failed to delete session. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   useEffect(() => {
@@ -184,54 +200,52 @@ const ConsumptionHistory: React.FC = () => {
             >
               <div className="flex flex-col gap-4">
                 <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {session.strain_name}
-                        </h3>
-                        {session.id === newlyCreatedSessionId && (
-                          <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full animate-pulse">
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded font-medium">{session.vessel_category || 'Other'}</span>
-                          <span className="capitalize">{session.vessel}</span>
+                  {/* Header: Location (left) and Date/Time (right) */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-green-600 flex-shrink-0" />
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {session.location}
+                      </h3>
+                      {session.id === newlyCreatedSessionId && (
+                        <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-full animate-pulse">
+                          NEW
                         </span>
-                        <span>•</span>
-                        <span>Quantity: {formatQuantity(session.quantity)}</span>
-                        {session.thc_percentage && (
-                          <>
-                            <span>•</span>
-                            <span>THC: {session.thc_percentage}%</span>
-                          </>
-                        )}
-                      </div>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-500 text-right flex-shrink-0 font-medium">
+                      {format(new Date(session.date + 'T' + session.time), 'MMM d, yyyy')} • {format(new Date(session.date + 'T' + session.time), 'h:mm a')}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span>{session.location}</span>
+                  {/* Strain and details */}
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Cannabis className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-gray-900">{session.strain_name}</span>
+                      {session.thc_percentage && (
+                        <span className="text-sm text-gray-500">({session.thc_percentage}% THC)</span>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {format(new Date(session.date + 'T' + session.time), 'MMM d, yyyy • h:mm a')}
+                    <div className="flex items-center gap-2 text-sm text-gray-600 ml-6">
+                      <span className="inline-flex items-center gap-1">
+                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded font-medium">{session.vessel_category || 'Other'}</span>
+                        <span className="capitalize">{session.vessel}</span>
+                      </span>
+                      <span>•</span>
+                      <span>{formatQuantity(session.quantity)}</span>
                     </div>
                   </div>
 
                   {session.who_with && (
-                    <div className="mb-3">
+                    <div className="mb-2 ml-6">
                       <span className="text-sm font-medium text-gray-700">With: </span>
                       <span className="text-sm text-gray-600">{session.who_with}</span>
                     </div>
                   )}
 
-                  {session.accessory_used && session.accessory_used !== 'None' && (
-                    <div className="mb-3">
+                  {session.accessory_used && session.accessory_used !== 'None' && session.accessory_used !== 'N/A' && (
+                    <div className="mb-2 ml-6">
                       <span className="text-sm font-medium text-gray-700">Accessory: </span>
                       <span className="text-sm text-gray-600">{session.accessory_used}</span>
                     </div>
@@ -274,14 +288,46 @@ const ConsumptionHistory: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {/* Edit Button */}
-                <div className="mt-4 text-right">
-                  <button
-                    onClick={() => handleEditSession(session)}
-                    className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Edit
-                  </button>
+                {/* Action Buttons */}
+                <div className="mt-4 flex justify-end gap-2">
+                  {deleteConfirmId === session.id ? (
+                    // Delete confirmation UI
+                    <div className="flex items-center gap-2 bg-red-50 px-3 py-2 rounded-md border border-red-200">
+                      <span className="text-sm text-red-700">Delete this session?</span>
+                      <button
+                        onClick={() => handleDeleteSession(session.id)}
+                        disabled={isDeleting}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(null)}
+                        disabled={isDeleting}
+                        className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    // Normal action buttons
+                    <>
+                      <button
+                        onClick={() => setDeleteConfirmId(session.id)}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => handleEditSession(session)}
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

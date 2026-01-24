@@ -12,7 +12,8 @@ import {
   getAccessoryConfig,
   VesselCategory,
   FlowerSize,
-  SessionImage
+  SessionImage,
+  FLOWER_SIZES
 } from '@/types/consumption';
 import { cn } from '@/lib/utils';
 import SuccessNotification from '@/components/ui/SuccessNotification';
@@ -77,6 +78,7 @@ const ConsumptionForm: React.FC = () => {
     currentSession,
     updateCurrentSession,
     addSession,
+    updateSession,
     clearCurrentSession,
     isSaving,
     preferences,
@@ -84,7 +86,12 @@ const ConsumptionForm: React.FC = () => {
     sessions
   } = useConsumptionStore();
 
+  // Check if we're in edit mode (currentSession has an id)
+  const editingSessionId = currentSession?.id as string | undefined;
+  const isEditMode = !!editingSessionId;
+
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [showLastSession, setShowLastSession] = useState(false);
 
   // Initialize form with default values
@@ -122,8 +129,67 @@ const ConsumptionForm: React.FC = () => {
     updateCurrentSession(formData);
   }, [formData, updateCurrentSession]);
 
-  // Pre-populate strain, THC, state_purchased, purchased_legally from most recent session
+  // Update form when currentSession changes (e.g., when editing a session)
+  // Use a ref to track if we've already populated for this session ID
+  const lastPopulatedSessionId = React.useRef<string | null>(null);
+  
   useEffect(() => {
+    const sessionId = (currentSession as { id?: string } | undefined)?.id;
+    
+    // Only populate if we have a session ID and it's different from the last one we populated
+    if (currentSession && sessionId && sessionId !== lastPopulatedSessionId.current) {
+      lastPopulatedSessionId.current = sessionId;
+      
+      // Determine the correct quantity value
+      // For size_category types, the stored quantity is an index that needs to be converted to FlowerSize string
+      let quantityValue: number | FlowerSize = currentSession.quantity ?? 1;
+      const vesselCategory = currentSession.vessel_category as VesselCategory;
+      if (vesselCategory) {
+        const quantityConfig = getQuantityConfig(vesselCategory);
+        if (quantityConfig.type === 'size_category' && typeof quantityValue === 'number') {
+          // Convert numeric index back to FlowerSize string
+          quantityValue = FLOWER_SIZES[quantityValue] || 'medium';
+        }
+      }
+      
+      setFormData({
+        date: currentSession.date || format(new Date(), 'yyyy-MM-dd'),
+        time: currentSession.time || format(new Date(), 'HH:mm'),
+        location: currentSession.location || '',
+        latitude: currentSession.latitude,
+        longitude: currentSession.longitude,
+        who_with: currentSession.who_with || '',
+        vessel_category: currentSession.vessel_category || '',
+        vessel: currentSession.vessel || '',
+        accessory_used: currentSession.accessory_used || 'N/A',
+        my_vessel: currentSession.my_vessel ?? true,
+        my_substance: currentSession.my_substance ?? true,
+        strain_name: currentSession.strain_name || '',
+        thc_percentage: currentSession.thc_percentage || 0,
+        purchased_legally: currentSession.purchased_legally ?? true,
+        state_purchased: currentSession.state_purchased || '',
+        tobacco: currentSession.tobacco,
+        kief: currentSession.kief ?? false,
+        concentrate: currentSession.concentrate ?? false,
+        lavender: currentSession.lavender ?? false,
+        quantity: quantityValue,
+        comments: currentSession.comments || '',
+      });
+    }
+    
+    // Clear the ref when exiting edit mode
+    if (!sessionId) {
+      lastPopulatedSessionId.current = null;
+    }
+  }, [currentSession]);
+
+  // Pre-populate strain, THC, state_purchased, purchased_legally from most recent session
+  // BUT only if we're not in edit mode
+  useEffect(() => {
+    const sessionId = (currentSession as { id?: string } | undefined)?.id;
+    // Skip if we're editing an existing session
+    if (sessionId) return;
+    
     if (sessions.length > 0 && !formData.strain_name) {
       // Sessions are already sorted by created_at desc, so sessions[0] is most recent
       const recent = sessions[0];
@@ -135,7 +201,7 @@ const ConsumptionForm: React.FC = () => {
         purchased_legally: recent.purchased_legally ?? true,
       }));
     }
-  }, [sessions.length]); // Only run when sessions array length changes (initial load)
+  }, [sessions.length, currentSession]); // Only run when sessions array length changes (initial load)
 
   const handleInputChange = (field: keyof ConsumptionFormData, value: string | number | boolean | FlowerSize | undefined) => {
     setFormData(prev => {
@@ -189,26 +255,37 @@ const ConsumptionForm: React.FC = () => {
         ...(selectedLocationId && { selectedLocationId })
       };
 
-      const newSession = await addSession(sessionData);
-      
-      // If we have uploaded images, link them to the new session
-      if (uploadedImages.length > 0 && newSession?.id) {
-        try {
-          // Link all temporary images to the actual session
-          for (const image of uploadedImages) {
-            if (image.session_id.startsWith('temp_')) {
-              await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${newSession.id}`, {
-                method: 'PATCH',
-              });
+      let savedSessionId: string | undefined;
+
+      if (isEditMode && editingSessionId) {
+        // Update existing session
+        await updateSession(editingSessionId, sessionData);
+        savedSessionId = editingSessionId;
+      } else {
+        // Create new session
+        const newSession = await addSession(sessionData);
+        savedSessionId = newSession?.id;
+        
+        // If we have uploaded images, link them to the new session
+        if (uploadedImages.length > 0 && savedSessionId) {
+          try {
+            // Link all temporary images to the actual session
+            for (const image of uploadedImages) {
+              if (image.session_id.startsWith('temp_')) {
+                await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${savedSessionId}`, {
+                  method: 'PATCH',
+                });
+              }
             }
+          } catch (error) {
+            console.error('Failed to link images to session:', error);
+            // Don't fail the session creation if image linking fails
           }
-        } catch (error) {
-          console.error('Failed to link images to session:', error);
-          // Don't fail the session creation if image linking fails
         }
       }
 
-      // Show success notification
+      // Show success notification with appropriate message
+      setSuccessMessage(isEditMode ? "Session updated successfully!" : "Session logged successfully!");
       setShowSuccess(true);
 
       // Reset form after a short delay, preserving strain/THC/purchase info from the session we just created
@@ -257,21 +334,56 @@ const ConsumptionForm: React.FC = () => {
     <div className="max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-6">
         <Cannabis className="h-6 w-6 text-green-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Log Consumption Session</h1>
-        <button
-          type="button"
-          onClick={() => setShowLastSession(true)}
-          disabled={sessions.length === 0}
-          className={cn(
-            "ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-            sessions.length === 0
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-green-100 text-green-700 hover:bg-green-200"
-          )}
-        >
-          <History className="h-4 w-4" />
-          Last Session
-        </button>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEditMode ? 'Edit Consumption Session' : 'Log Consumption Session'}
+        </h1>
+        {isEditMode ? (
+          <button
+            type="button"
+            onClick={() => {
+              clearCurrentSession();
+              setFormData({
+                date: format(new Date(), 'yyyy-MM-dd'),
+                time: format(new Date(), 'HH:mm'),
+                location: preferences.defaultLocation || '',
+                who_with: '',
+                vessel_category: '',
+                vessel: '',
+                accessory_used: 'N/A',
+                my_vessel: true,
+                my_substance: true,
+                strain_name: '',
+                thc_percentage: 0,
+                purchased_legally: true,
+                state_purchased: '',
+                tobacco: undefined,
+                kief: false,
+                concentrate: false,
+                lavender: false,
+                quantity: 1,
+                comments: ''
+              });
+            }}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+          >
+            Cancel Edit
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowLastSession(true)}
+            disabled={sessions.length === 0}
+            className={cn(
+              "ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+              sessions.length === 0
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-green-100 text-green-700 hover:bg-green-200"
+            )}
+          >
+            <History className="h-4 w-4" />
+            Last Session
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -533,7 +645,7 @@ const ConsumptionForm: React.FC = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -551,6 +663,15 @@ const ConsumptionForm: React.FC = () => {
                 className="mr-2"
               />
               Concentrate
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.lavender}
+                onChange={(e) => handleInputChange('lavender', e.target.checked)}
+                className="mr-2"
+              />
+              Lavender
             </label>
           </div>
         </div>
@@ -595,21 +716,24 @@ const ConsumptionForm: React.FC = () => {
           type="submit"
           disabled={isSaving}
           className={cn(
-            "w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-md transition-colors",
+            "w-full flex items-center justify-center gap-2 px-6 py-3 text-white font-medium rounded-md transition-colors",
+            isEditMode ? "bg-blue-600" : "bg-green-600",
             isSaving
               ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              : isEditMode
+                ? "hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                : "hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           )}
         >
           <Save className="h-5 w-5" />
-          {isSaving ? 'Saving...' : 'Log Session'}
+          {isSaving ? 'Saving...' : isEditMode ? 'Update Session' : 'Log Session'}
         </button>
       </form>
 
       {/* Success Notification */}
       {showSuccess && (
         <SuccessNotification
-          message="Session logged successfully!"
+          message={successMessage}
           onComplete={handleSuccessComplete}
           duration={2000}
         />

@@ -30,10 +30,7 @@ interface LocationSelectorProps {
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
   value,
-  latitude,
-  longitude,
   onLocationSelect,
-  required = false,
   className = ""
 }) => {
   const [mode, setMode] = useState<'existing' | 'new'>('existing');

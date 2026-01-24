@@ -6,7 +6,6 @@ import { Calendar, Clock, MapPin, Cannabis, Save, History } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import {
   ConsumptionFormData,
-  VESSEL_CATEGORIES,
   getQuantityConfig,
   createQuantityValue,
   getAccessoryConfig,
@@ -201,6 +200,7 @@ const ConsumptionForm: React.FC = () => {
         purchased_legally: recent.purchased_legally ?? true,
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions.length, currentSession]); // Only run when sessions array length changes (initial load)
 
   const handleInputChange = (field: keyof ConsumptionFormData, value: string | number | boolean | FlowerSize | undefined) => {

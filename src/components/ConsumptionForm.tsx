@@ -182,14 +182,20 @@ const ConsumptionForm: React.FC = () => {
     }
   }, [currentSession]);
 
+  // Track if we've already done the initial pre-population of strain info
+  // This prevents the strain from being reset when the user clears it
+  const hasPrePopulatedStrain = React.useRef(false);
+
   // Pre-populate strain, THC, state_purchased, purchased_legally from most recent session
-  // BUT only if we're not in edit mode
+  // BUT only if we're not in edit mode AND we haven't already pre-populated
   useEffect(() => {
     const sessionId = (currentSession as { id?: string } | undefined)?.id;
     // Skip if we're editing an existing session
     if (sessionId) return;
     
-    if (sessions.length > 0 && !formData.strain_name) {
+    // Only pre-populate once per form lifecycle
+    if (sessions.length > 0 && !hasPrePopulatedStrain.current) {
+      hasPrePopulatedStrain.current = true;
       // Sessions are already sorted by created_at desc, so sessions[0] is most recent
       const recent = sessions[0];
       setFormData(prev => ({
@@ -316,6 +322,7 @@ const ConsumptionForm: React.FC = () => {
         clearCurrentSession();
         setSelectedLocationId(null);
         setUploadedImages([]);
+        // Don't reset hasPrePopulatedStrain here since we're preserving the strain info
       }, 500);
 
     } catch (error) {
@@ -342,6 +349,8 @@ const ConsumptionForm: React.FC = () => {
             type="button"
             onClick={() => {
               clearCurrentSession();
+              // Reset the pre-population ref so strain info can be pre-populated from recent session
+              hasPrePopulatedStrain.current = false;
               setFormData({
                 date: format(new Date(), 'yyyy-MM-dd'),
                 time: format(new Date(), 'HH:mm'),

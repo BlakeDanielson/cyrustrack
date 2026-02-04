@@ -2,16 +2,17 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { X, MapPin, Clock, Calendar, Cannabis } from 'lucide-react';
+import { X, MapPin, Clock, Calendar, Cannabis, Copy } from 'lucide-react';
 import { ConsumptionSession, formatQuantity } from '@/types/consumption';
 
 interface LastSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onApply?: (session: ConsumptionSession) => void;
   session: ConsumptionSession | null;
 }
 
-export default function LastSessionModal({ isOpen, onClose, session }: LastSessionModalProps) {
+export default function LastSessionModal({ isOpen, onClose, onApply, session }: LastSessionModalProps) {
   if (!isOpen || !session) return null;
 
   return (
@@ -138,10 +139,26 @@ export default function LastSessionModal({ isOpen, onClose, session }: LastSessi
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t bg-gray-50">
+        <div className="p-6 border-t bg-gray-50 space-y-3">
+          {onApply && (
+            <button
+              onClick={() => {
+                onApply(session);
+                onClose();
+              }}
+              className="w-full px-4 py-2.5 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              Apply to New Session
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors"
+            className={`w-full px-4 py-2 font-medium rounded-md transition-colors ${
+              onApply 
+                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
           >
             Close
           </button>

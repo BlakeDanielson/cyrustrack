@@ -23,6 +23,7 @@ import WhoWithSelector from '@/components/WhoWithSelector';
 import AccessorySelector from '@/components/AccessorySelector';
 import VesselSelector from '@/components/VesselSelector';
 import TobaccoSelector from '@/components/TobaccoSelector';
+import StrainSelector from '@/components/StrainSelector';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -552,13 +553,11 @@ const ConsumptionForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Strain Name *
             </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g., Blue Dream"
+            <StrainSelector
               value={formData.strain_name}
-              onChange={(e) => handleInputChange('strain_name', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              onChange={(value) => handleInputChange('strain_name', value)}
+              placeholder="Select or type strain name..."
+              required
             />
           </div>
           <div>
@@ -752,6 +751,36 @@ const ConsumptionForm: React.FC = () => {
       <LastSessionModal
         isOpen={showLastSession}
         onClose={() => setShowLastSession(false)}
+        onApply={(session) => {
+          // Apply last session data to the form (keeping current date/time)
+          setFormData(prev => ({
+            ...prev,
+            // Keep current date and time
+            date: prev.date,
+            time: prev.time,
+            // Apply session data
+            location: session.location || '',
+            who_with: session.who_with || '',
+            vessel_category: session.vessel_category || '',
+            vessel: session.vessel || '',
+            accessory_used: session.accessory_used || 'N/A',
+            my_vessel: session.my_vessel ?? true,
+            my_substance: session.my_substance ?? true,
+            strain_name: session.strain_name || '',
+            thc_percentage: session.thc_percentage || 0,
+            purchased_legally: session.purchased_legally ?? true,
+            state_purchased: session.state_purchased || '',
+            tobacco: session.tobacco || undefined,
+            kief: session.kief ?? false,
+            concentrate: session.concentrate ?? false,
+            lavender: session.lavender ?? false,
+            quantity: session.quantity || 1,
+            comment: '', // Don't copy the comment
+            images: [], // Don't copy images
+          }));
+          // Reset pre-population ref since we're manually applying values
+          hasPrePopulatedStrain.current = true;
+        }}
         session={sessions.length > 0 ? sessions[0] : null}
       />
     </div>

@@ -106,6 +106,7 @@ const ConsumptionForm: React.FC = () => {
     my_vessel: true,
     my_substance: true,
     strain_name: '',
+    strain_type: '',
     thc_percentage: 0,
     purchased_legally: true,
     state_purchased: '',
@@ -165,6 +166,7 @@ const ConsumptionForm: React.FC = () => {
         my_vessel: currentSession.my_vessel ?? true,
         my_substance: currentSession.my_substance ?? true,
         strain_name: currentSession.strain_name || '',
+        strain_type: currentSession.strain_type || '',
         thc_percentage: currentSession.thc_percentage || 0,
         purchased_legally: currentSession.purchased_legally ?? true,
         state_purchased: currentSession.state_purchased || '',
@@ -202,6 +204,7 @@ const ConsumptionForm: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         strain_name: prev.strain_name || recent.strain_name || '',
+        strain_type: prev.strain_type || recent.strain_type || '',
         thc_percentage: prev.thc_percentage || recent.thc_percentage || 0,
         state_purchased: prev.state_purchased || recent.state_purchased || '',
         purchased_legally: recent.purchased_legally ?? true,
@@ -309,6 +312,7 @@ const ConsumptionForm: React.FC = () => {
           my_substance: true,
           // Preserve these from the session we just submitted
           strain_name: formData.strain_name,
+          strain_type: formData.strain_type,
           thc_percentage: formData.thc_percentage,
           purchased_legally: formData.purchased_legally,
           state_purchased: formData.state_purchased,
@@ -363,6 +367,7 @@ const ConsumptionForm: React.FC = () => {
                 my_vessel: true,
                 my_substance: true,
                 strain_name: '',
+                strain_type: '',
                 thc_percentage: 0,
                 purchased_legally: true,
                 state_purchased: '',
@@ -548,7 +553,7 @@ const ConsumptionForm: React.FC = () => {
         </div>
 
         {/* Strain Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Strain Name *
@@ -559,6 +564,24 @@ const ConsumptionForm: React.FC = () => {
               placeholder="Select or type strain name..."
               required
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Strain Type
+            </label>
+            <select
+              value={formData.strain_type || ''}
+              onChange={(e) => handleInputChange('strain_type', e.target.value || undefined)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Select type...</option>
+              <option value="Sativa">Sativa</option>
+              <option value="Indica">Indica</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Sativa-dominant">Sativa-dominant</option>
+              <option value="Indica-dominant">Indica-dominant</option>
+              <option value="CBD">CBD</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -780,6 +803,7 @@ const ConsumptionForm: React.FC = () => {
             my_vessel: session.my_vessel ?? true,
             my_substance: session.my_substance ?? true,
             strain_name: session.strain_name || '',
+            strain_type: session.strain_type || '',
             thc_percentage: session.thc_percentage || 0,
             purchased_legally: session.purchased_legally ?? true,
             state_purchased: session.state_purchased || '',

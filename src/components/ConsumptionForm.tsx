@@ -752,6 +752,19 @@ const ConsumptionForm: React.FC = () => {
         isOpen={showLastSession}
         onClose={() => setShowLastSession(false)}
         onApply={(session) => {
+          // Convert QuantityValue to form quantity (number | FlowerSize)
+          let quantityValue: number | FlowerSize = 1;
+          if (session.quantity) {
+            const vesselCategory = session.vessel_category as VesselCategory;
+            const quantityConfig = vesselCategory ? getQuantityConfig(vesselCategory) : null;
+            if (quantityConfig?.type === 'size_category') {
+              // Convert numeric index back to FlowerSize string
+              quantityValue = FLOWER_SIZES[session.quantity.amount] || 'medium';
+            } else {
+              quantityValue = session.quantity.amount;
+            }
+          }
+          
           // Apply last session data to the form (keeping current date/time)
           setFormData(prev => ({
             ...prev,
@@ -774,7 +787,7 @@ const ConsumptionForm: React.FC = () => {
             kief: session.kief ?? false,
             concentrate: session.concentrate ?? false,
             lavender: session.lavender ?? false,
-            quantity: session.quantity || 1,
+            quantity: quantityValue,
             comment: '', // Don't copy the comment
             images: [], // Don't copy images
           }));

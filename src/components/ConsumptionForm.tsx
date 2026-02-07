@@ -24,6 +24,7 @@ import AccessorySelector from '@/components/AccessorySelector';
 import VesselSelector from '@/components/VesselSelector';
 import TobaccoSelector from '@/components/TobaccoSelector';
 import StrainSelector from '@/components/StrainSelector';
+import StrainTypeSelector from '@/components/StrainTypeSelector';
 
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
@@ -569,19 +570,11 @@ const ConsumptionForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Strain Type
             </label>
-            <select
+            <StrainTypeSelector
               value={formData.strain_type || ''}
-              onChange={(e) => handleInputChange('strain_type', e.target.value || undefined)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select type...</option>
-              <option value="Sativa">Sativa</option>
-              <option value="Indica">Indica</option>
-              <option value="Hybrid">Hybrid</option>
-              <option value="Sativa-dominant">Sativa-dominant</option>
-              <option value="Indica-dominant">Indica-dominant</option>
-              <option value="CBD">CBD</option>
-            </select>
+              onChange={(value) => handleInputChange('strain_type', value)}
+              placeholder="Select or type strain type..."
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -788,12 +781,12 @@ const ConsumptionForm: React.FC = () => {
             }
           }
           
-          // Apply last session data to the form (keeping current date/time)
+          // Apply last session data to the form (including date/time for easier past entry logging)
           setFormData(prev => ({
             ...prev,
-            // Keep current date and time
-            date: prev.date,
-            time: prev.time,
+            // Copy date and time from last session
+            date: session.date || prev.date,
+            time: session.time || prev.time,
             // Apply session data
             location: session.location || '',
             who_with: session.who_with || '',

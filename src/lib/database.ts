@@ -288,6 +288,7 @@ export const databaseService = {
     try {
       // Prepare update data
       const updateData: Prisma.ConsumptionSessionUpdateInput = {};
+      let resolvedLocationId: string | undefined;
       
       if (updates.date !== undefined) updateData.date = updates.date;
       if (updates.time !== undefined) updateData.time = updates.time;
@@ -312,6 +313,32 @@ export const databaseService = {
       if (updates.quantity !== undefined) updateData.quantity = JSON.stringify(updates.quantity);
       if (updates.quantity_legacy !== undefined) updateData.quantity_legacy = updates.quantity_legacy;
       if (updates.comments !== undefined) updateData.comments = updates.comments;
+
+      // Keep normalized location link in sync during edits.
+      if (updates.selectedLocationId) {
+        resolvedLocationId = updates.selectedLocationId;
+      } else if (updates.location !== undefined) {
+        resolvedLocationId = await findOrCreateLocationEntry(
+          updates.location,
+          updates.latitude,
+          updates.longitude
+        ) || undefined;
+      }
+
+      if (resolvedLocationId) {
+        updateData.location_ref = {
+          connect: { id: resolvedLocationId }
+        };
+
+        // Update location usage stats when a linked location is explicitly selected.
+        await prisma.location.update({
+          where: { id: resolvedLocationId },
+          data: {
+            usage_count: { increment: 1 },
+            last_used_at: new Date()
+          }
+        });
+      }
 
       const updatedSession = await prisma.consumptionSession.update({
         where: { id },

@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       quantity: body.quantity,
       quantity_legacy: body.quantity_legacy,
       comments: body.comments || undefined,
+      selectedLocationId: body.selectedLocationId,
     };
 
     const newSession = await databaseService.create(sessionData);

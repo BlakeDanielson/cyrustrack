@@ -137,6 +137,7 @@ const ConsumptionForm: React.FC = () => {
   
   useEffect(() => {
     const sessionId = (currentSession as { id?: string } | undefined)?.id;
+    const currentLocationId = (currentSession as { location_ref?: { id?: string } } | undefined)?.location_ref?.id;
     
     // Only populate if we have a session ID and it's different from the last one we populated
     if (currentSession && sessionId && sessionId !== lastPopulatedSessionId.current) {
@@ -178,11 +179,14 @@ const ConsumptionForm: React.FC = () => {
         quantity: quantityValue,
         comments: currentSession.comments || '',
       });
+
+      setSelectedLocationId(currentLocationId || null);
     }
     
     // Clear the ref when exiting edit mode
     if (!sessionId) {
       lastPopulatedSessionId.current = null;
+      setSelectedLocationId(null);
     }
   }, [currentSession]);
 
@@ -441,6 +445,7 @@ const ConsumptionForm: React.FC = () => {
           </label>
           <LocationSelector
             value={formData.location}
+            locationId={selectedLocationId || undefined}
             latitude={formData.latitude}
             longitude={formData.longitude}
             onLocationSelect={(location, coordinates, locationId) => {

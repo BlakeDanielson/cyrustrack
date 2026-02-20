@@ -21,6 +21,7 @@ interface Location {
 
 interface LocationSelectorProps {
   value: string;
+  locationId?: string;
   latitude?: number;
   longitude?: number;
   onLocationSelect: (location: string, coordinates?: { lat: number; lng: number }, locationId?: string) => void;
@@ -30,6 +31,7 @@ interface LocationSelectorProps {
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
   value,
+  locationId,
   onLocationSelect,
   className = ""
 }) => {
@@ -38,6 +40,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [newLocationName, setNewLocationName] = useState('');
+  const [newLocationCoordinates, setNewLocationCoordinates] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [newLocationAddress, setNewLocationAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -135,8 +140,20 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   }, [existingLocations, isLoading]);
 
+  // Prefer explicit location ID when editing existing sessions
+  useEffect(() => {
+    if (locationId) {
+      setSelectedLocationId(locationId);
+      if (mode !== 'existing') {
+        setMode('existing');
+      }
+    }
+  }, [locationId, mode]);
+
   // When editing, try to find and select the matching location from the value prop
   useEffect(() => {
+    if (locationId) return;
+
     if (value && existingLocations.length > 0 && !selectedLocationId) {
       // Try to find a matching location by name or nickname
       const matchingLocation = existingLocations.find(
@@ -146,7 +163,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         setSelectedLocationId(matchingLocation.id);
       }
     }
-  }, [value, existingLocations, selectedLocationId]);
+  }, [value, existingLocations, selectedLocationId, locationId]);
 
   const handleExistingLocationSelect = (location: Location) => {
     setSelectedLocationId(location.id);
@@ -160,7 +177,10 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   const handleNewLocationSelect = (location: string, coordinates?: { lat: number; lng: number }) => {
     setSelectedLocationId(null);
-    onLocationSelect(location, coordinates);
+    setNewLocationAddress(location);
+    setNewLocationCoordinates(coordinates);
+    const displayName = newLocationName.trim() || location;
+    onLocationSelect(displayName, coordinates);
   };
 
   const formatLastUsed = (dateString?: string) => {
@@ -329,6 +349,29 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             }}
             height="320px"
           />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Location Name (optional)
+            </label>
+            <input
+              type="text"
+              value={newLocationName}
+              onChange={(e) => {
+                const nextName = e.target.value;
+                setNewLocationName(nextName);
+                const displayName = nextName.trim() || newLocationAddress || value;
+                if (displayName) {
+                  onLocationSelect(displayName, newLocationCoordinates);
+                }
+              }}
+              placeholder="e.g., Backyard, Favorite Park, Scenic Overlook"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              If left blank, we will use the map address.
+            </p>
+          </div>
           
           {/* Optional custom name input */}
           {value && (

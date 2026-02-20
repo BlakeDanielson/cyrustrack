@@ -91,8 +91,11 @@ export interface ConsumptionSession {
   updated_at: string;
 }
 
-// Type for creating new consumption sessions (without generated fields)
-export type CreateConsumptionSession = Omit<ConsumptionSession, 'id' | 'created_at' | 'updated_at'>;
+// Type for creating/updating consumption sessions from the client.
+// selectedLocationId lets the form link directly to an existing normalized location.
+export type CreateConsumptionSession = Omit<ConsumptionSession, 'id' | 'created_at' | 'updated_at'> & {
+  selectedLocationId?: string;
+};
 
 // Vessel categories (main types of consumption devices)
 export const VESSEL_CATEGORIES = [

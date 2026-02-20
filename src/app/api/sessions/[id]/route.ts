@@ -72,6 +72,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (body.concentrate !== undefined) updates.concentrate = body.concentrate;
     if (body.quantity !== undefined) updates.quantity = body.quantity;
     if (body.quantity_legacy !== undefined) updates.quantity_legacy = body.quantity_legacy;
+    if (body.selectedLocationId !== undefined) updates.selectedLocationId = body.selectedLocationId;
 
     const updatedSession = await databaseService.update(id, updates);
     

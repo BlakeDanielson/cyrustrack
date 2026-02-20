@@ -59,19 +59,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (body.latitude !== undefined) updates.latitude = body.latitude;
     if (body.longitude !== undefined) updates.longitude = body.longitude;
     if (body.who_with !== undefined) updates.who_with = body.who_with;
+    if (body.vessel_category !== undefined) updates.vessel_category = body.vessel_category;
     if (body.vessel !== undefined) updates.vessel = body.vessel;
     if (body.accessory_used !== undefined) updates.accessory_used = body.accessory_used;
     if (body.my_vessel !== undefined) updates.my_vessel = body.my_vessel;
     if (body.my_substance !== undefined) updates.my_substance = body.my_substance;
     if (body.strain_name !== undefined) updates.strain_name = body.strain_name;
+    if (body.strain_type !== undefined) updates.strain_type = body.strain_type;
     if (body.thc_percentage !== undefined) updates.thc_percentage = body.thc_percentage;
     if (body.purchased_legally !== undefined) updates.purchased_legally = body.purchased_legally;
     if (body.state_purchased !== undefined) updates.state_purchased = body.state_purchased;
     if (body.tobacco !== undefined) updates.tobacco = body.tobacco;
     if (body.kief !== undefined) updates.kief = body.kief;
+    if (body.lavender !== undefined) updates.lavender = body.lavender;
     if (body.concentrate !== undefined) updates.concentrate = body.concentrate;
     if (body.quantity !== undefined) updates.quantity = body.quantity;
     if (body.quantity_legacy !== undefined) updates.quantity_legacy = body.quantity_legacy;
+    if (body.comments !== undefined) updates.comments = body.comments;
     if (body.selectedLocationId !== undefined) updates.selectedLocationId = body.selectedLocationId;
 
     const updatedSession = await databaseService.update(id, updates);

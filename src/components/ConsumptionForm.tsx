@@ -108,7 +108,7 @@ const ConsumptionForm: React.FC = () => {
     my_substance: true,
     strain_name: '',
     strain_type: '',
-    thc_percentage: 0,
+    thc_percentage: undefined,
     purchased_legally: true,
     state_purchased: '',
     tobacco: undefined,
@@ -169,7 +169,7 @@ const ConsumptionForm: React.FC = () => {
         my_substance: currentSession.my_substance ?? true,
         strain_name: currentSession.strain_name || '',
         strain_type: currentSession.strain_type || '',
-        thc_percentage: currentSession.thc_percentage || 0,
+        thc_percentage: currentSession.thc_percentage ?? undefined,
         purchased_legally: currentSession.purchased_legally ?? true,
         state_purchased: currentSession.state_purchased || '',
         tobacco: currentSession.tobacco,
@@ -210,7 +210,7 @@ const ConsumptionForm: React.FC = () => {
         ...prev,
         strain_name: prev.strain_name || recent.strain_name || '',
         strain_type: prev.strain_type || recent.strain_type || '',
-        thc_percentage: prev.thc_percentage || recent.thc_percentage || 0,
+        thc_percentage: prev.thc_percentage ?? recent.thc_percentage ?? undefined,
         state_purchased: prev.state_purchased || recent.state_purchased || '',
         purchased_legally: recent.purchased_legally ?? true,
       }));
@@ -251,6 +251,20 @@ const ConsumptionForm: React.FC = () => {
           newData.accessory_used = 'N/A';
         } else {
           newData.accessory_used = '';
+        }
+      }
+
+      // Re-populate known strain metadata from the most recent matching session.
+      if (field === 'strain_name' && typeof value === 'string') {
+        const normalizedStrain = value.trim().toLowerCase();
+        if (normalizedStrain) {
+          const recentMatch = sessions.find(
+            (session) => session.strain_name.trim().toLowerCase() === normalizedStrain
+          );
+          if (recentMatch) {
+            newData.strain_type = recentMatch.strain_type || '';
+            newData.thc_percentage = recentMatch.thc_percentage ?? undefined;
+          }
         }
       }
 
@@ -318,7 +332,7 @@ const ConsumptionForm: React.FC = () => {
           // Preserve these from the session we just submitted
           strain_name: formData.strain_name,
           strain_type: formData.strain_type,
-          thc_percentage: formData.thc_percentage,
+          thc_percentage: formData.thc_percentage ?? undefined,
           purchased_legally: formData.purchased_legally,
           state_purchased: formData.state_purchased,
           tobacco: undefined,
@@ -373,7 +387,7 @@ const ConsumptionForm: React.FC = () => {
                 my_substance: true,
                 strain_name: '',
                 strain_type: '',
-                thc_percentage: 0,
+                thc_percentage: undefined,
                 purchased_legally: true,
                 state_purchased: '',
                 tobacco: undefined,
@@ -802,7 +816,7 @@ const ConsumptionForm: React.FC = () => {
             my_substance: session.my_substance ?? true,
             strain_name: session.strain_name || '',
             strain_type: session.strain_type || '',
-            thc_percentage: session.thc_percentage || 0,
+            thc_percentage: session.thc_percentage ?? undefined,
             purchased_legally: session.purchased_legally ?? true,
             state_purchased: session.state_purchased || '',
             tobacco: session.tobacco || undefined,

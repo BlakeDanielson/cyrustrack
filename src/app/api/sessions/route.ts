@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       my_vessel: body.my_vessel ?? true,
       my_substance: body.my_substance ?? true,
       strain_name: body.strain_name,
+      strain_type: body.strain_type,
       thc_percentage: body.thc_percentage,
       purchased_legally: body.purchased_legally ?? true,
       state_purchased: body.state_purchased,

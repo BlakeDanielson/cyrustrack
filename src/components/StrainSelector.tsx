@@ -17,6 +17,8 @@ interface StrainSelectorProps {
   required?: boolean;
 }
 
+const normalizeForSearch = (value: string) => value.toLowerCase().replace(/\s+/g, '');
+
 const StrainSelector: React.FC<StrainSelectorProps> = ({
   value,
   onChange,
@@ -24,9 +26,11 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
   className = "",
   required = false
 }) => {
+  const MIN_SEARCH_LENGTH = 3;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [recentStrains, setRecentStrains] = useState<StrainEntry[]>([]);
+  const [searchResults, setSearchResults] = useState<StrainEntry[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,31 +55,74 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
     fetchStrains();
   }, []);
 
-  // Filter strains by search term
+  // Query strains from dataset when the search term reaches minimum length
+  useEffect(() => {
+    const query = searchTerm.trim();
+
+    if (!query || query.length < MIN_SEARCH_LENGTH) {
+      setSearchResults(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `/api/sessions/strains?q=${encodeURIComponent(query)}&limit=100`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch strain search results');
+        }
+        const data = await response.json();
+        setSearchResults(data.strains || []);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        console.error('Error searching strain names:', err);
+        setSearchResults([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [searchTerm, MIN_SEARCH_LENGTH]);
+
+  // Show recent strains when not searching, otherwise show API search results
   const filteredStrains = useMemo(() => {
-    if (!searchTerm.trim()) {
+    const query = searchTerm.trim();
+    if (!query || query.length < MIN_SEARCH_LENGTH) {
       return recentStrains;
     }
-    return recentStrains.filter(entry =>
-      entry.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [recentStrains, searchTerm]);
+    return searchResults || [];
+  }, [recentStrains, searchResults, searchTerm, MIN_SEARCH_LENGTH]);
 
   // Check if search term matches an existing strain (case-insensitive)
   const searchMatchesExisting = useMemo(() => {
     if (!searchTerm.trim()) return false;
-    return recentStrains.some(
-      entry => entry.name.toLowerCase() === searchTerm.toLowerCase()
+    return filteredStrains.some(
+      entry => normalizeForSearch(entry.name) === normalizeForSearch(searchTerm)
     );
-  }, [searchTerm, recentStrains]);
+  }, [searchTerm, filteredStrains]);
 
   // Check if current value matches an existing strain
   const valueMatchesExisting = useMemo(() => {
     if (!value.trim()) return false;
     return recentStrains.some(
-      entry => entry.name.toLowerCase() === value.toLowerCase()
+      entry => normalizeForSearch(entry.name) === normalizeForSearch(value)
     );
   }, [value, recentStrains]);
+
+  const queryLength = searchTerm.trim().length;
+  const isSearchMode = queryLength >= MIN_SEARCH_LENGTH;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -211,7 +258,7 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
           <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
-              <span>Recent strains</span>
+              <span>{isSearchMode ? 'Search results' : 'Recent strains'}</span>
             </div>
           </div>
 
@@ -235,6 +282,13 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
                     Use &quot;<span className="font-medium text-green-700">{searchTerm}</span>&quot;
                   </span>
                 </div>
+              </div>
+            )}
+
+            {/* Minimum character hint */}
+            {searchTerm.trim() && queryLength < MIN_SEARCH_LENGTH && (
+              <div className="p-3 text-xs text-gray-500 border-b border-gray-100">
+                Type at least {MIN_SEARCH_LENGTH} characters to search all strains.
               </div>
             )}
 
@@ -277,9 +331,9 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
             ))}
 
             {/* No matches for search */}
-            {filteredStrains.length === 0 && searchTerm && searchMatchesExisting && (
+            {!isLoading && isSearchMode && filteredStrains.length === 0 && (
               <div className="p-4 text-center text-gray-500 text-sm">
-                No additional strains match &quot;{searchTerm}&quot;
+                No strains match &quot;{searchTerm}&quot;
               </div>
             )}
 

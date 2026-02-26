@@ -7,10 +7,12 @@ interface StrainEntry {
   lastUsed: string;
 }
 
+const normalizeForSearch = (value: string) => value.toLowerCase().replace(/\s+/g, '');
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const searchQuery = searchParams.get('q')?.toLowerCase() || '';
+    const searchQuery = normalizeForSearch(searchParams.get('q') || '');
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
     // Get all sessions with strain names, ordered by most recent first
@@ -62,7 +64,7 @@ export async function GET(request: NextRequest) {
     // Filter by search query if provided
     if (searchQuery) {
       entries = entries.filter(entry => 
-        entry.name.toLowerCase().includes(searchQuery)
+        normalizeForSearch(entry.name).includes(searchQuery)
       );
     }
 

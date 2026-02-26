@@ -19,6 +19,14 @@ interface Location {
   last_used_at?: string;
 }
 
+interface SessionMapPoint {
+  id: string;
+  name: string;
+  latitude?: number;
+  longitude?: number;
+  usage_count?: number;
+}
+
 interface LocationSelectorProps {
   value: string;
   locationId?: string;
@@ -43,6 +51,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationCoordinates, setNewLocationCoordinates] = useState<{ lat: number; lng: number } | undefined>(undefined);
   const [newLocationAddress, setNewLocationAddress] = useState<string>('');
+  const [historicalMapPoints, setHistoricalMapPoints] = useState<SessionMapPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isEditingSession = Boolean(locationId);
@@ -72,6 +81,58 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     };
 
     fetchExistingLocations();
+  }, []);
+
+  // Pull full historical session coordinate points so map matches analytics coverage.
+  useEffect(() => {
+    const fetchHistoricalMapPoints = async () => {
+      try {
+        const response = await fetch('/api/sessions');
+        if (!response.ok) {
+          throw new Error('Failed to fetch sessions for map points');
+        }
+        const data = await response.json();
+        const sessions = Array.isArray(data.sessions) ? data.sessions : [];
+
+        const groupedPoints = new Map<string, SessionMapPoint>();
+
+        for (const session of sessions) {
+          if (
+            typeof session.latitude !== 'number' ||
+            typeof session.longitude !== 'number' ||
+            Number.isNaN(session.latitude) ||
+            Number.isNaN(session.longitude)
+          ) {
+            continue;
+          }
+
+          const roundedLat = Math.round(session.latitude * 1000) / 1000;
+          const roundedLng = Math.round(session.longitude * 1000) / 1000;
+          const key = `${roundedLat},${roundedLng}`;
+          const existingPoint = groupedPoints.get(key);
+
+          if (existingPoint) {
+            existingPoint.usage_count = (existingPoint.usage_count || 0) + 1;
+          } else {
+            groupedPoints.set(key, {
+              id: `session-point-${key}`,
+              name: session.location || 'Past session location',
+              latitude: roundedLat,
+              longitude: roundedLng,
+              usage_count: 1,
+            });
+          }
+        }
+
+        setHistoricalMapPoints(Array.from(groupedPoints.values()));
+      } catch (err) {
+        console.error('Error fetching historical map points:', err);
+        // Fallback to existing locations if session-level points cannot be loaded.
+        setHistoricalMapPoints([]);
+      }
+    };
+
+    fetchHistoricalMapPoints();
   }, []);
 
   // Search locations when search term changes
@@ -358,7 +419,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             onLocationSelect={(location, coordinates) => {
               handleNewLocationSelect(location, coordinates);
             }}
-            historicalLocations={existingLocations}
+            historicalLocations={historicalMapPoints.length > 0 ? historicalMapPoints : existingLocations}
             height="320px"
           />
 

@@ -135,11 +135,26 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     performReverseGeocode(lat, lng);
   }, [performReverseGeocode]);
 
-  // Clicking a historical marker drops the active pin there
-  const handleHistoricalMarkerClick = useCallback((lat: number, lng: number) => {
+  // Clicking a historical marker should use the saved location label immediately.
+  const handleHistoricalMarkerClick = useCallback((location: HistoricalLocation) => {
+    if (
+      typeof location.latitude !== 'number' ||
+      typeof location.longitude !== 'number' ||
+      Number.isNaN(location.latitude) ||
+      Number.isNaN(location.longitude)
+    ) {
+      return;
+    }
+
+    const lat = location.latitude;
+    const lng = location.longitude;
+    const preferredLabel = location.nickname || location.name;
+
     setPinLocation({ lat, lng });
-    performReverseGeocode(lat, lng);
-  }, [performReverseGeocode]);
+    setIsReverseGeocoding(false);
+    setGeocodedAddress(preferredLabel);
+    onLocationSelect(preferredLabel, { lat, lng });
+  }, [onLocationSelect]);
 
   // Handle "Use My Location" button
   const handleUseMyLocation = useCallback(() => {
@@ -268,7 +283,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
                 title={`${location.nickname || location.name}${location.usage_count ? ` (${location.usage_count} sessions)` : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleHistoricalMarkerClick(location.latitude as number, location.longitude as number);
+                  handleHistoricalMarkerClick(location);
                 }}
                 className="h-3 w-3 rounded-full bg-blue-500 border border-white shadow-sm opacity-90 hover:scale-125 transition-transform cursor-pointer"
               />

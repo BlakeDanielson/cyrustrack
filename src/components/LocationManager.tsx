@@ -269,10 +269,20 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
             filteredLocations.map((location) => (
               <div key={location.id} className="p-3 sm:p-4">
                 <div 
-                  className="flex items-start justify-between gap-2 cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded"
+                  className="flex items-start justify-between gap-2 cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded min-h-[56px] touch-manipulation"
                   onClick={() => setExpandedLocation(
                     expandedLocation === location.id ? null : location.id
                   )}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={expandedLocation === location.id}
+                  aria-label={`${expandedLocation === location.id ? 'Collapse' : 'Expand'} location ${location.name}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedLocation(expandedLocation === location.id ? null : location.id);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex-shrink-0">
@@ -337,7 +347,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                 setEditingName(location.id);
                                 setTempName(location.name);
                               }}
-                              className="flex-shrink-0 p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                              className="flex-shrink-0 p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors touch-manipulation"
                               title="Edit location name"
                             >
                               <Edit2 className="h-4 w-4" />
@@ -364,9 +374,9 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 pt-0.5">
+                  <div className="flex items-center gap-2 pt-0.5 flex-shrink-0">
                     {!location.latitude || !location.longitude ? (
-                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hidden sm:inline-block">
                         No coordinates
                       </span>
                     ) : null}
@@ -393,7 +403,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                           )}
                         </h4>
                         
-                        <div className="h-60 sm:h-[300px] rounded-lg overflow-hidden border border-gray-300">
+                        <div className="h-[240px] sm:h-[300px] md:h-[320px] rounded-lg overflow-hidden border border-gray-300">
                           <ReactMap
                             initialViewState={{
                               longitude: location.longitude || -98.5795,
@@ -448,7 +458,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                           </ReactMap>
                         </div>
                         
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                           {location.latitude && location.longitude 
                             ? "Click anywhere on the map to move the pin, or drag the existing pin to a new location"
                             : "Click anywhere on the map to set the location for this place"
@@ -466,6 +476,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                           <input
                             type="number"
                             step="0.000001"
+                            inputMode="decimal"
                             value={location.latitude || ''}
                             onChange={(e) => {
                               const newLat = parseFloat(e.target.value);
@@ -486,6 +497,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                           <input
                             type="number"
                             step="0.000001"
+                            inputMode="decimal"
                             value={location.longitude || ''}
                             onChange={(e) => {
                               const newLng = parseFloat(e.target.value);

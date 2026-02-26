@@ -53,19 +53,58 @@ const ConsumptionHistory: React.FC = () => {
     clearNewlyCreatedSessionId();
   }, [loadSessions, clearNewlyCreatedSessionId]);
 
-  const filteredSessions = sessions.filter(session => {
+  const baseFilteredSessions = sessions.filter(session => {
+    if (filters.startDate && session.date < filters.startDate) {
+      return false;
+    }
+
+    if (filters.endDate && session.date > filters.endDate) {
+      return false;
+    }
+
+    if (filters.location) {
+      const locationFilter = filters.location.toLowerCase();
+      if (!session.location.toLowerCase().includes(locationFilter)) {
+        return false;
+      }
+    }
+
+    if (filters.vessel) {
+      const vesselFilter = filters.vessel.toLowerCase();
+      if (!session.vessel.toLowerCase().includes(vesselFilter)) {
+        return false;
+      }
+    }
+
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
+      const whoWith = session.who_with?.toLowerCase() ?? '';
+      const comments = session.comments?.toLowerCase() ?? '';
       return (
         session.strain_name.toLowerCase().includes(searchLower) ||
         session.location.toLowerCase().includes(searchLower) ||
         session.vessel.toLowerCase().includes(searchLower) ||
-        session.who_with.toLowerCase().includes(searchLower) ||
-        (session.comments?.toLowerCase().includes(searchLower) ?? false)
+        whoWith.includes(searchLower) ||
+        comments.includes(searchLower)
       );
     }
+
     return true;
   });
+
+  const filteredSessions = filters.uniqueLocationsOnly
+    ? (() => {
+        const seenLocations = new Set<string>();
+        return baseFilteredSessions.filter((session) => {
+          const locationKey = session.location.trim().toLowerCase();
+          if (seenLocations.has(locationKey)) {
+            return false;
+          }
+          seenLocations.add(locationKey);
+          return true;
+        });
+      })()
+    : baseFilteredSessions;
 
   // Remove the star rating and effects functions since they're not in simplified form
 
@@ -119,7 +158,7 @@ const ConsumptionHistory: React.FC = () => {
         {/* Filter Panel */}
         {showFilters && (
           <div className="p-4 bg-gray-50 rounded-md border">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date Range
@@ -162,6 +201,20 @@ const ConsumptionHistory: React.FC = () => {
                   onChange={(e) => setFilters({ vessel: e.target.value })}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location Mode
+                </label>
+                <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(filters.uniqueLocationsOnly)}
+                    onChange={(e) => setFilters({ uniqueLocationsOnly: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-gray-700">Unique locations only</span>
+                </label>
               </div>
             </div>
             <div className="mt-4 flex gap-2">

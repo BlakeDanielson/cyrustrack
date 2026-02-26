@@ -5,7 +5,8 @@ import {
   CreateConsumptionSession, 
   ConsumptionFilters, 
   AppState,
-  ConsumptionFormData
+  ConsumptionFormData,
+  FeedbackEntry
 } from '@/types/consumption';
 import { storageService } from '@/lib/storage';
 
@@ -23,10 +24,13 @@ interface ConsumptionStore extends AppState {
   clearCurrentSession: () => void;
 
   // UI actions
-  setActiveView: (view: 'log' | 'history' | 'analytics' | 'settings') => void;
+  setActiveView: (view: 'log' | 'history' | 'analytics' | 'feedback' | 'settings') => void;
   setMobileMenu: (show: boolean) => void;
   setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
+  addFeedbackEntry: (content: string) => void;
+  updateFeedbackEntry: (id: string, content: string) => void;
+  deleteFeedbackEntry: (id: string) => void;
 
   // Success feedback actions
   setNewlyCreatedSessionId: (id: string | null) => void;
@@ -59,6 +63,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
         activeView: 'log',
         showMobileMenu: false,
         newlyCreatedSessionId: null,
+        feedbackEntries: [],
         preferences: {
           defaultLocation: '',
           enableNotifications: false,
@@ -175,6 +180,43 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           set({ isSaving: saving });
         },
 
+        addFeedbackEntry: (content: string) => {
+          const trimmed = content.trim();
+          if (!trimmed) return;
+
+          const now = new Date().toISOString();
+          const entry: FeedbackEntry = {
+            id: crypto.randomUUID(),
+            content: trimmed,
+            created_at: now,
+            updated_at: now,
+          };
+
+          set((state) => ({
+            feedbackEntries: [entry, ...state.feedbackEntries],
+          }));
+        },
+
+        updateFeedbackEntry: (id: string, content: string) => {
+          const trimmed = content.trim();
+          if (!trimmed) return;
+
+          const now = new Date().toISOString();
+          set((state) => ({
+            feedbackEntries: state.feedbackEntries.map((entry) =>
+              entry.id === id
+                ? { ...entry, content: trimmed, updated_at: now }
+                : entry
+            ),
+          }));
+        },
+
+        deleteFeedbackEntry: (id: string) => {
+          set((state) => ({
+            feedbackEntries: state.feedbackEntries.filter((entry) => entry.id !== id),
+          }));
+        },
+
         // Success feedback actions
         setNewlyCreatedSessionId: (id: string | null) => {
           set({ newlyCreatedSessionId: id });
@@ -228,6 +270,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           preferences: state.preferences,
           filters: state.filters,
           activeView: state.activeView,
+          feedbackEntries: state.feedbackEntries,
         }),
       }
     ),

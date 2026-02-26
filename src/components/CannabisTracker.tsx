@@ -14,6 +14,7 @@ import SeasonalAnalysis from './analytics/SeasonalAnalysis';
 import HolidayImpactAnalysis from './analytics/HolidayImpactAnalysis';
 import CSVImportDialog from './CSVImportDialog';
 import LocationManager from './LocationManager';
+import FeedbackNotes from './FeedbackNotes';
 import { BarChart3, Settings as SettingsIcon, Clock, MapPin, Leaf, Upload, Flame, Calendar } from 'lucide-react';
 import { autoMigration } from '@/lib/auto-migration';
 
@@ -369,6 +370,8 @@ const CannabisTracker: React.FC = () => {
         return <ConsumptionHistory />;
       case 'analytics':
         return <Analytics />;
+      case 'feedback':
+        return <FeedbackNotes />;
       case 'settings':
         return <Settings />;
       default:

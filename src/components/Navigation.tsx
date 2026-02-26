@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cannabis, Plus, History, BarChart3, Settings, Menu, X } from 'lucide-react';
+import { Cannabis, Plus, History, BarChart3, MessageSquare, Settings, Menu, X } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,7 @@ const Navigation: React.FC = () => {
     { id: 'log', label: 'Log Session', icon: Plus },
     { id: 'history', label: 'History', icon: History },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
 
@@ -122,7 +123,7 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Bottom Navigation (Alternative) */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-40">
-          <div className="grid grid-cols-4 h-16">
+          <div className="grid grid-cols-5 h-16">
             {navigationItems.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}

@@ -44,6 +44,13 @@ export interface SessionImage {
   created_at: string;
 }
 
+export interface FeedbackEntry {
+  id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Consumption session data types
 export interface ConsumptionSession {
   id: string;
@@ -239,6 +246,7 @@ export interface ConsumptionFilters {
   strainName?: string;
   location?: string;
   vessel?: string;
+  uniqueLocationsOnly?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -288,9 +296,10 @@ export interface AppState {
   searchTerm: string;
   
   // UI state
-  activeView: 'log' | 'history' | 'analytics' | 'settings';
+  activeView: 'log' | 'history' | 'analytics' | 'feedback' | 'settings';
   showMobileMenu: boolean;
   newlyCreatedSessionId: string | null;
+  feedbackEntries: FeedbackEntry[];
 
   // User preferences
   preferences: {

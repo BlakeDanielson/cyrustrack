@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 interface AccessoryEntry {
   name: string;
@@ -11,11 +12,21 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get('q')?.toLowerCase() || '';
     const vesselFilter = searchParams.get('vessel') || '';
+    const vesselCategoryFilter = searchParams.get('vesselCategory') || '';
 
     // Build the query filter
-    const whereClause: { vessel?: string } = {};
+    const whereClause: Prisma.ConsumptionSessionWhereInput = {};
     if (vesselFilter) {
-      whereClause.vessel = vesselFilter;
+      whereClause.vessel = {
+        equals: vesselFilter,
+        mode: 'insensitive',
+      };
+    }
+    if (vesselCategoryFilter) {
+      whereClause.vessel_category = {
+        equals: vesselCategoryFilter,
+        mode: 'insensitive',
+      };
     }
 
     // Get sessions with their accessories, optionally filtered by vessel
@@ -53,6 +64,7 @@ export async function GET(request: NextRequest) {
       accessories: entries,
       total: entries.length,
       vessel: vesselFilter || null,
+      vesselCategory: vesselCategoryFilter || null,
       success: true
     });
   } catch (error) {

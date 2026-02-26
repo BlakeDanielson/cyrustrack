@@ -29,6 +29,7 @@ const AccessorySelector: React.FC<AccessorySelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [vesselAccessories, setVesselAccessories] = useState<AccessoryEntry[]>([]);
+  const [categorySearchAccessories, setCategorySearchAccessories] = useState<AccessoryEntry[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -62,6 +63,7 @@ const AccessorySelector: React.FC<AccessorySelectorProps> = ({
         const data = await response.json();
         const accessories = data.accessories || [];
         setVesselAccessories(accessories);
+        setCategorySearchAccessories(null);
       } catch (err) {
         console.error('Error fetching accessories:', err);
         setError('Failed to load accessories');
@@ -73,23 +75,77 @@ const AccessorySelector: React.FC<AccessorySelectorProps> = ({
     fetchAccessories();
   }, [vessel]);
 
-  // Filter accessories by search term
+  // When typing, search across all accessories for the selected vessel category.
+  useEffect(() => {
+    const query = searchTerm.trim();
+    const category = (vesselCategory || '').toString().trim();
+
+    if (!query) {
+      setCategorySearchAccessories(null);
+      return;
+    }
+
+    if (!category) {
+      setCategorySearchAccessories(
+        vesselAccessories.filter((entry) =>
+          entry.name.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({
+          q: query,
+          vesselCategory: category,
+        });
+        const response = await fetch(`/api/sessions/accessories?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error('Failed to search accessories');
+        }
+        const data = await response.json();
+        setCategorySearchAccessories(data.accessories || []);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        console.error('Error searching accessories:', err);
+        setError('Failed to search accessories');
+        setCategorySearchAccessories([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [searchTerm, vesselAccessories, vesselCategory]);
+
+  // Show vessel-specific recent options by default; use category-wide options while searching.
   const filteredAccessories = useMemo(() => {
     if (!searchTerm.trim()) {
       return vesselAccessories;
     }
-    return vesselAccessories.filter(entry =>
-      entry.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [vesselAccessories, searchTerm]);
+    return categorySearchAccessories || [];
+  }, [vesselAccessories, categorySearchAccessories, searchTerm]);
 
   // Check if search term matches an existing accessory (case-insensitive)
   const searchMatchesExisting = useMemo(() => {
     if (!searchTerm.trim()) return false;
-    return vesselAccessories.some(
+    return filteredAccessories.some(
       entry => entry.name.toLowerCase() === searchTerm.toLowerCase()
     );
-  }, [searchTerm, vesselAccessories]);
+  }, [searchTerm, filteredAccessories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -221,6 +277,11 @@ const AccessorySelector: React.FC<AccessorySelectorProps> = ({
                   className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
                 />
               </div>
+              {searchTerm.trim() && vesselCategory && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Searching all accessories used with {vesselCategory}.
+                </p>
+              )}
             </div>
           )}
 

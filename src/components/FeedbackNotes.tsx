@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { MessageSquare, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
+import { SessionImage } from '@/types/consumption';
+import ImageUpload from './ImageUpload';
 
 const FeedbackNotes: React.FC = () => {
   const {
@@ -13,33 +16,60 @@ const FeedbackNotes: React.FC = () => {
   } = useConsumptionStore();
 
   const [newFeedback, setNewFeedback] = useState('');
+  const [newFeedbackImages, setNewFeedbackImages] = useState<SessionImage[]>([]);
+  const [newFeedbackTempSessionId, setNewFeedbackTempSessionId] = useState(`temp_feedback_${Date.now()}`);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
+  const [editingImages, setEditingImages] = useState<SessionImage[]>([]);
+  const [editingTempSessionId, setEditingTempSessionId] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<SessionImage | null>(null);
 
   const handleCreate = () => {
     if (!newFeedback.trim()) return;
-    addFeedbackEntry(newFeedback);
+    addFeedbackEntry(newFeedback, newFeedbackImages);
     setNewFeedback('');
+    setNewFeedbackImages([]);
+    setNewFeedbackTempSessionId(`temp_feedback_${Date.now()}`);
   };
 
-  const handleStartEdit = (id: string, content: string) => {
+  const handleStartEdit = (id: string, content: string, images?: SessionImage[]) => {
     setEditingId(id);
     setEditingContent(content);
+    setEditingImages(images || []);
+    setEditingTempSessionId(`temp_feedback_edit_${id}_${Date.now()}`);
   };
 
   const handleSaveEdit = () => {
     if (!editingId || !editingContent.trim()) return;
-    updateFeedbackEntry(editingId, editingContent);
+    updateFeedbackEntry(editingId, editingContent, editingImages);
     setEditingId(null);
     setEditingContent('');
+    setEditingImages([]);
+    setEditingTempSessionId(null);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingContent('');
+    setEditingImages([]);
+    setEditingTempSessionId(null);
   };
 
-  const handleDelete = (id: string) => {
+  const deleteImageById = async (imageId: string) => {
+    try {
+      await fetch(`/api/images/upload?id=${imageId}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Failed to delete feedback image:', error);
+    }
+  };
+
+  const handleDelete = async (id: string, images?: SessionImage[]) => {
+    if (images?.length) {
+      await Promise.all(images.map((image) => deleteImageById(image.id)));
+    }
+
     deleteFeedbackEntry(id);
     if (editingId === id) {
       handleCancelEdit();
@@ -64,6 +94,19 @@ const FeedbackNotes: React.FC = () => {
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
         />
+        <div className="mt-4">
+          <ImageUpload
+            sessionId={newFeedbackTempSessionId}
+            onImageUploaded={(image) => {
+              setNewFeedbackImages((prev) => [...prev, image]);
+            }}
+            onImageDeleted={(imageId) => {
+              setNewFeedbackImages((prev) => prev.filter((img) => img.id !== imageId));
+            }}
+            existingImages={newFeedbackImages}
+            maxImages={4}
+          />
+        </div>
         <div className="mt-3 flex justify-end">
           <button
             type="button"
@@ -100,6 +143,45 @@ const FeedbackNotes: React.FC = () => {
                   <p className="text-sm text-gray-900 whitespace-pre-wrap">{entry.content}</p>
                 )}
 
+                {isEditing && editingTempSessionId && (
+                  <div className="mt-3">
+                    <ImageUpload
+                      sessionId={editingTempSessionId}
+                      onImageUploaded={(image) => {
+                        setEditingImages((prev) => [...prev, image]);
+                      }}
+                      onImageDeleted={(imageId) => {
+                        setEditingImages((prev) => prev.filter((img) => img.id !== imageId));
+                      }}
+                      existingImages={editingImages}
+                      maxImages={4}
+                    />
+                  </div>
+                )}
+
+                {!isEditing && entry.images && entry.images.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {entry.images.map((image) => (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setLightboxImage(image)}
+                        className="group relative rounded-md border border-gray-200 overflow-hidden focus:outline-none focus:ring-2 focus:ring-green-500"
+                        aria-label={`Open image ${image.filename} in full screen`}
+                      >
+                        <Image
+                          src={image.blob_url}
+                          alt={image.alt_text || image.filename}
+                          width={200}
+                          height={96}
+                          className="w-full h-24 object-cover transition-transform group-hover:scale-[1.02]"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-xs text-gray-500">Last updated: {updatedLabel}</span>
                   <div className="flex items-center gap-2">
@@ -126,7 +208,7 @@ const FeedbackNotes: React.FC = () => {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleStartEdit(entry.id, entry.content)}
+                        onClick={() => handleStartEdit(entry.id, entry.content, entry.images)}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -135,7 +217,7 @@ const FeedbackNotes: React.FC = () => {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleDelete(entry.id)}
+                      onClick={() => handleDelete(entry.id, entry.images)}
                       className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -148,6 +230,34 @@ const FeedbackNotes: React.FC = () => {
           })
         )}
       </div>
+
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div
+            className="relative max-w-5xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setLightboxImage(null)}
+              className="absolute -top-12 right-0 text-white bg-black/40 hover:bg-black/60 rounded-full p-2"
+              aria-label="Close full screen image"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <Image
+              src={lightboxImage.blob_url}
+              alt={lightboxImage.alt_text || lightboxImage.filename}
+              width={1400}
+              height={900}
+              className="w-full max-h-[80vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

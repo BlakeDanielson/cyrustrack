@@ -28,8 +28,8 @@ interface ConsumptionStore extends AppState {
   setMobileMenu: (show: boolean) => void;
   setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
-  addFeedbackEntry: (content: string) => void;
-  updateFeedbackEntry: (id: string, content: string) => void;
+  addFeedbackEntry: (content: string, images?: FeedbackEntry['images']) => void;
+  updateFeedbackEntry: (id: string, content: string, images?: FeedbackEntry['images']) => void;
   deleteFeedbackEntry: (id: string) => void;
 
   // Success feedback actions
@@ -180,7 +180,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           set({ isSaving: saving });
         },
 
-        addFeedbackEntry: (content: string) => {
+        addFeedbackEntry: (content: string, images?: FeedbackEntry['images']) => {
           const trimmed = content.trim();
           if (!trimmed) return;
 
@@ -188,6 +188,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           const entry: FeedbackEntry = {
             id: crypto.randomUUID(),
             content: trimmed,
+            images: images && images.length > 0 ? images : undefined,
             created_at: now,
             updated_at: now,
           };
@@ -197,7 +198,7 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           }));
         },
 
-        updateFeedbackEntry: (id: string, content: string) => {
+        updateFeedbackEntry: (id: string, content: string, images?: FeedbackEntry['images']) => {
           const trimmed = content.trim();
           if (!trimmed) return;
 
@@ -205,7 +206,12 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           set((state) => ({
             feedbackEntries: state.feedbackEntries.map((entry) =>
               entry.id === id
-                ? { ...entry, content: trimmed, updated_at: now }
+                ? {
+                    ...entry,
+                    content: trimmed,
+                    images: images && images.length > 0 ? images : undefined,
+                    updated_at: now
+                  }
                 : entry
             ),
           }));

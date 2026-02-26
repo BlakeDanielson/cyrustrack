@@ -33,7 +33,7 @@ export interface LocationReference {
 // Image type for session images
 export interface SessionImage {
   id: string;
-  session_id: string;
+  session_id: string | null;
   blob_url: string;
   filename: string;
   file_size: number;
@@ -47,6 +47,7 @@ export interface SessionImage {
 export interface FeedbackEntry {
   id: string;
   content: string;
+  images?: SessionImage[];
   created_at: string;
   updated_at: string;
 }

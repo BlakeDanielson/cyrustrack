@@ -310,15 +310,16 @@ const ConsumptionForm: React.FC = () => {
             // #endregion
             // Link all temporary images to the actual session
             for (const image of uploadedImages) {
+              const imageSessionId = image.session_id ?? '';
               // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:307',message:'Evaluating uploaded image for temp-session linking',data:{imageId:image.id,imageSessionId:image.session_id,eligibleForLink:image.session_id.startsWith('temp_')},timestamp:Date.now()})}).catch(()=>{});
+              fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:307',message:'Evaluating uploaded image for temp-session linking',data:{imageId:image.id,imageSessionId:imageSessionId,eligibleForLink:imageSessionId.startsWith('temp_')},timestamp:Date.now()})}).catch(()=>{});
               // #endregion
-              if (image.session_id.startsWith('temp_')) {
-                const linkResponse = await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${savedSessionId}`, {
+              if (imageSessionId.startsWith('temp_')) {
+                const linkResponse = await fetch(`/api/images/upload?tempSessionId=${imageSessionId}&actualSessionId=${savedSessionId}`, {
                   method: 'PATCH',
                 });
                 // #region agent log
-                fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:312',message:'Image link API completed',data:{imageId:image.id,imageSessionId:image.session_id,status:linkResponse.status,ok:linkResponse.ok},timestamp:Date.now()})}).catch(()=>{});
+                fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:312',message:'Image link API completed',data:{imageId:image.id,imageSessionId:imageSessionId,status:linkResponse.status,ok:linkResponse.ok},timestamp:Date.now()})}).catch(()=>{});
                 // #endregion
               }
             }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { MessageSquare, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
@@ -10,6 +10,7 @@ import ImageUpload from './ImageUpload';
 const FeedbackNotes: React.FC = () => {
   const {
     feedbackEntries,
+    loadFeedbackEntries,
     addFeedbackEntry,
     updateFeedbackEntry,
     deleteFeedbackEntry,
@@ -23,13 +24,28 @@ const FeedbackNotes: React.FC = () => {
   const [editingImages, setEditingImages] = useState<SessionImage[]>([]);
   const [editingTempSessionId, setEditingTempSessionId] = useState<string | null>(null);
   const [lightboxImage, setLightboxImage] = useState<SessionImage | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleCreate = () => {
+  useEffect(() => {
+    loadFeedbackEntries().catch((error) => {
+      console.error('Failed to load feedback entries:', error);
+    });
+  }, [loadFeedbackEntries]);
+
+  const handleCreate = async () => {
     if (!newFeedback.trim()) return;
-    addFeedbackEntry(newFeedback, newFeedbackImages);
-    setNewFeedback('');
-    setNewFeedbackImages([]);
-    setNewFeedbackTempSessionId(`temp_feedback_${Date.now()}`);
+    setIsSaving(true);
+    try {
+      await addFeedbackEntry(newFeedback, newFeedbackImages);
+      setNewFeedback('');
+      setNewFeedbackImages([]);
+      setNewFeedbackTempSessionId(`temp_feedback_${Date.now()}`);
+    } catch (error) {
+      console.error('Failed to save feedback:', error);
+      alert('Failed to save feedback. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleStartEdit = (id: string, content: string, images?: SessionImage[]) => {
@@ -39,13 +55,21 @@ const FeedbackNotes: React.FC = () => {
     setEditingTempSessionId(`temp_feedback_edit_${id}_${Date.now()}`);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingId || !editingContent.trim()) return;
-    updateFeedbackEntry(editingId, editingContent, editingImages);
-    setEditingId(null);
-    setEditingContent('');
-    setEditingImages([]);
-    setEditingTempSessionId(null);
+    setIsSaving(true);
+    try {
+      await updateFeedbackEntry(editingId, editingContent, editingImages);
+      setEditingId(null);
+      setEditingContent('');
+      setEditingImages([]);
+      setEditingTempSessionId(null);
+    } catch (error) {
+      console.error('Failed to update feedback:', error);
+      alert('Failed to update feedback. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -66,13 +90,20 @@ const FeedbackNotes: React.FC = () => {
   };
 
   const handleDelete = async (id: string, images?: SessionImage[]) => {
+    setIsSaving(true);
     if (images?.length) {
       await Promise.all(images.map((image) => deleteImageById(image.id)));
     }
-
-    deleteFeedbackEntry(id);
-    if (editingId === id) {
-      handleCancelEdit();
+    try {
+      await deleteFeedbackEntry(id);
+      if (editingId === id) {
+        handleCancelEdit();
+      }
+    } catch (error) {
+      console.error('Failed to delete feedback:', error);
+      alert('Failed to delete feedback. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -111,7 +142,7 @@ const FeedbackNotes: React.FC = () => {
           <button
             type="button"
             onClick={handleCreate}
-            disabled={!newFeedback.trim()}
+            disabled={!newFeedback.trim() || isSaving}
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Plus className="h-4 w-4" />
@@ -190,7 +221,7 @@ const FeedbackNotes: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleSaveEdit}
-                          disabled={!editingContent.trim()}
+                          disabled={!editingContent.trim() || isSaving}
                           className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-50"
                         >
                           <Save className="h-3.5 w-3.5" />

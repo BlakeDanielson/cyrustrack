@@ -28,9 +28,10 @@ interface ConsumptionStore extends AppState {
   setMobileMenu: (show: boolean) => void;
   setLoading: (loading: boolean) => void;
   setSaving: (saving: boolean) => void;
-  addFeedbackEntry: (content: string, images?: FeedbackEntry['images']) => void;
-  updateFeedbackEntry: (id: string, content: string, images?: FeedbackEntry['images']) => void;
-  deleteFeedbackEntry: (id: string) => void;
+  loadFeedbackEntries: () => Promise<void>;
+  addFeedbackEntry: (content: string, images?: FeedbackEntry['images']) => Promise<void>;
+  updateFeedbackEntry: (id: string, content: string, images?: FeedbackEntry['images']) => Promise<void>;
+  deleteFeedbackEntry: (id: string) => Promise<void>;
 
   // Success feedback actions
   setNewlyCreatedSessionId: (id: string | null) => void;
@@ -180,47 +181,104 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           set({ isSaving: saving });
         },
 
-        addFeedbackEntry: (content: string, images?: FeedbackEntry['images']) => {
+        loadFeedbackEntries: async () => {
+          try {
+            const response = await fetch('/api/feedback');
+            if (!response.ok) {
+              throw new Error('Failed to fetch feedback entries');
+            }
+
+            const data = await response.json();
+            set({ feedbackEntries: data.feedbackEntries || [] });
+          } catch (error) {
+            console.error('Failed to load feedback entries:', error);
+            throw error;
+          }
+        },
+
+        addFeedbackEntry: async (content: string, images?: FeedbackEntry['images']) => {
           const trimmed = content.trim();
           if (!trimmed) return;
 
-          const now = new Date().toISOString();
-          const entry: FeedbackEntry = {
-            id: crypto.randomUUID(),
-            content: trimmed,
-            images: images && images.length > 0 ? images : undefined,
-            created_at: now,
-            updated_at: now,
-          };
+          try {
+            const response = await fetch('/api/feedback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                content: trimmed,
+                images: images && images.length > 0 ? images : undefined,
+              }),
+            });
 
-          set((state) => ({
-            feedbackEntries: [entry, ...state.feedbackEntries],
-          }));
+            if (!response.ok) {
+              throw new Error('Failed to create feedback entry');
+            }
+
+            const data = await response.json();
+            const entry = data.feedbackEntry as FeedbackEntry;
+
+            set((state) => ({
+              feedbackEntries: [entry, ...state.feedbackEntries],
+            }));
+          } catch (error) {
+            console.error('Failed to create feedback entry:', error);
+            throw error;
+          }
         },
 
-        updateFeedbackEntry: (id: string, content: string, images?: FeedbackEntry['images']) => {
+        updateFeedbackEntry: async (id: string, content: string, images?: FeedbackEntry['images']) => {
           const trimmed = content.trim();
           if (!trimmed) return;
 
-          const now = new Date().toISOString();
-          set((state) => ({
-            feedbackEntries: state.feedbackEntries.map((entry) =>
-              entry.id === id
-                ? {
-                    ...entry,
-                    content: trimmed,
-                    images: images && images.length > 0 ? images : undefined,
-                    updated_at: now
-                  }
-                : entry
-            ),
-          }));
+          try {
+            const response = await fetch(`/api/feedback/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                content: trimmed,
+                images: images && images.length > 0 ? images : undefined,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to update feedback entry');
+            }
+
+            const data = await response.json();
+            const updatedEntry = data.feedbackEntry as FeedbackEntry;
+
+            set((state) => ({
+              feedbackEntries: state.feedbackEntries.map((entry) =>
+                entry.id === id ? updatedEntry : entry
+              ),
+            }));
+          } catch (error) {
+            console.error('Failed to update feedback entry:', error);
+            throw error;
+          }
         },
 
-        deleteFeedbackEntry: (id: string) => {
-          set((state) => ({
-            feedbackEntries: state.feedbackEntries.filter((entry) => entry.id !== id),
-          }));
+        deleteFeedbackEntry: async (id: string) => {
+          try {
+            const response = await fetch(`/api/feedback/${id}`, {
+              method: 'DELETE',
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to delete feedback entry');
+            }
+
+            set((state) => ({
+              feedbackEntries: state.feedbackEntries.filter((entry) => entry.id !== id),
+            }));
+          } catch (error) {
+            console.error('Failed to delete feedback entry:', error);
+            throw error;
+          }
         },
 
         // Success feedback actions
@@ -276,7 +334,6 @@ export const useConsumptionStore = create<ConsumptionStore>()(
           preferences: state.preferences,
           filters: state.filters,
           activeView: state.activeView,
-          feedbackEntries: state.feedbackEntries,
         }),
       }
     ),

@@ -345,7 +345,7 @@ const Settings: React.FC = () => {
 };
 
 const CannabisTracker: React.FC = () => {
-  const { activeView, loadSessions } = useConsumptionStore();
+  const { activeView, loadSessions, loadFeedbackEntries } = useConsumptionStore();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -354,13 +354,14 @@ const CannabisTracker: React.FC = () => {
         await autoMigration.migrateSilently();
         // Load sessions from database (or localStorage if migration failed)
         await loadSessions();
+        await loadFeedbackEntries();
       } catch (error) {
         console.error('Failed to initialize app:', error);
       }
     };
 
     initializeApp();
-  }, [loadSessions]);
+  }, [loadSessions, loadFeedbackEntries]);
 
   const renderActiveView = () => {
     switch (activeView) {

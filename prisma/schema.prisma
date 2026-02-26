@@ -125,3 +125,14 @@ model Image {
   @@index([session_id])
   @@map("session_images")
 }
+
+model Feedback {
+  id         String   @id @default(cuid())
+  content    String
+  images_json Json?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([updated_at])
+  @@map("feedback")
+}

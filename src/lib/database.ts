@@ -1,4 +1,4 @@
-import { ConsumptionSession, CreateConsumptionSession, QuantityValue } from '@/types/consumption';
+import { ConsumptionSession, CreateConsumptionSession, FeedbackEntry, QuantityValue, SessionImage } from '@/types/consumption';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
@@ -63,6 +63,26 @@ function convertPrismaToSession(prismaSession: SessionWithLocation): Consumption
     comments: prismaSession.comments ?? undefined,
     created_at: prismaSession.created_at.toISOString(),
     updated_at: prismaSession.updated_at.toISOString(),
+  };
+}
+
+function convertPrismaToFeedback(prismaFeedback: {
+  id: string;
+  content: string;
+  images_json: Prisma.JsonValue | null;
+  created_at: Date;
+  updated_at: Date;
+}): FeedbackEntry {
+  const parsedImages = Array.isArray(prismaFeedback.images_json)
+    ? (prismaFeedback.images_json as unknown as SessionImage[])
+    : undefined;
+
+  return {
+    id: prismaFeedback.id,
+    content: prismaFeedback.content,
+    images: parsedImages && parsedImages.length > 0 ? parsedImages : undefined,
+    created_at: prismaFeedback.created_at.toISOString(),
+    updated_at: prismaFeedback.updated_at.toISOString(),
   };
 }
 
@@ -429,6 +449,80 @@ export const databaseService = {
       return sessions.map(convertPrismaToSession);
     } catch (error) {
       console.error('Failed to get filtered sessions:', error);
+      throw error;
+    }
+  },
+
+  // Get all feedback entries from database
+  getFeedbackEntries: async (): Promise<FeedbackEntry[]> => {
+    try {
+      const feedbackEntries = await prisma.feedback.findMany({
+        orderBy: {
+          updated_at: 'desc'
+        }
+      });
+
+      return feedbackEntries.map(convertPrismaToFeedback);
+    } catch (error) {
+      console.error('Failed to load feedback entries from database:', error);
+      throw error;
+    }
+  },
+
+  // Create feedback entry
+  createFeedbackEntry: async (content: string, images?: SessionImage[]): Promise<FeedbackEntry> => {
+    try {
+      const createdEntry = await prisma.feedback.create({
+        data: {
+          content,
+          images_json: images && images.length > 0
+            ? (images as unknown as Prisma.InputJsonValue)
+            : Prisma.DbNull
+        }
+      });
+
+      return convertPrismaToFeedback(createdEntry);
+    } catch (error) {
+      console.error('Failed to create feedback entry:', error);
+      throw error;
+    }
+  },
+
+  // Update feedback entry
+  updateFeedbackEntry: async (id: string, content: string, images?: SessionImage[]): Promise<FeedbackEntry | null> => {
+    try {
+      const updatedEntry = await prisma.feedback.update({
+        where: { id },
+        data: {
+          content,
+          images_json: images && images.length > 0
+            ? (images as unknown as Prisma.InputJsonValue)
+            : Prisma.DbNull
+        }
+      });
+
+      return convertPrismaToFeedback(updatedEntry);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return null;
+      }
+      console.error('Failed to update feedback entry:', error);
+      throw error;
+    }
+  },
+
+  // Delete feedback entry
+  deleteFeedbackEntry: async (id: string): Promise<boolean> => {
+    try {
+      await prisma.feedback.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return false;
+      }
+      console.error('Failed to delete feedback entry:', error);
       throw error;
     }
   },

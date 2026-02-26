@@ -212,11 +212,11 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
   }
 
   return (
-    <div className={`${className} space-y-6`}>
+    <div className={`${className} space-y-4 sm:space-y-6`}>
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Location Management</h2>
-        <p className="text-sm text-gray-600">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Location Management</h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
           View and edit your consumption locations. Use the edit button to rename locations, drag pins on the map to update coordinates.
         </p>
       </div>
@@ -241,15 +241,15 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
           placeholder="Search locations..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
         />
       </div>
 
 
 
       {/* Locations List */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="p-3 sm:p-4 border-b border-gray-200">
           <h3 className="text-md font-medium text-gray-900">
             All Locations ({filteredLocations.length})
           </h3>
@@ -267,9 +267,9 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
             </div>
           ) : (
             filteredLocations.map((location) => (
-              <div key={location.id} className="p-4">
+              <div key={location.id} className="p-3 sm:p-4">
                 <div 
-                  className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded"
+                  className="flex items-start justify-between gap-2 cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded"
                   onClick={() => setExpandedLocation(
                     expandedLocation === location.id ? null : location.id
                   )}
@@ -281,7 +281,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {editingName === location.id ? (
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
                             <input
                               type="text"
                               value={tempName}
@@ -297,7 +297,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                 }
                               }}
                               autoFocus
-                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                               placeholder="Enter location name..."
                             />
                             <button
@@ -309,7 +309,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                 setEditingName(null);
                                 setTempName('');
                               }}
-                              className="flex-shrink-0 p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
+                              className="flex-shrink-0 p-2.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
                               title="Save changes"
                             >
                               <Check className="h-4 w-4" />
@@ -320,14 +320,14 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                 setEditingName(null);
                                 setTempName('');
                               }}
-                              className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+                              className="flex-shrink-0 p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
                               title="Cancel editing"
                             >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
                             <h4 className="font-medium text-gray-900 truncate flex-1">
                               {location.name}
                             </h4>
@@ -337,7 +337,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                                 setEditingName(location.id);
                                 setTempName(location.name);
                               }}
-                              className="flex-shrink-0 p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                              className="flex-shrink-0 p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
                               title="Edit location name"
                             >
                               <Edit2 className="h-4 w-4" />
@@ -364,7 +364,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 pt-0.5">
                     {!location.latitude || !location.longitude ? (
                       <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
                         No coordinates
@@ -382,7 +382,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                   <div className="mt-4 space-y-4">
                     {/* Individual Location Map */}
                     {ReactMap && mapboxToken && (
-                      <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                         <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-green-600" />
                           Click on map to set location
@@ -393,7 +393,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                           )}
                         </h4>
                         
-                        <div style={{ height: '300px' }} className="rounded-lg overflow-hidden border border-gray-300">
+                        <div className="h-60 sm:h-[300px] rounded-lg overflow-hidden border border-gray-300">
                           <ReactMap
                             initialViewState={{
                               longitude: location.longitude || -98.5795,
@@ -458,9 +458,9 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                     )}
 
                     {/* Manual Coordinate Input */}
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                       <h4 className="text-sm font-medium text-gray-900 mb-3">Manual Coordinates</h4>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                         <div>
                           <label className="block text-gray-600 mb-1">Latitude</label>
                           <input
@@ -503,7 +503,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                         </div>
                       </div>
                       
-                      <div className="flex justify-between mt-3">
+                      <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 sm:gap-3 mt-3">
                         <button
                           onClick={() => {
                             if (location.latitude && location.longitude) {
@@ -517,7 +517,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                             }
                           }}
                           disabled={!location.latitude || !location.longitude}
-                          className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
                           <RefreshCw className="h-3 w-3" />
                           Get Address
@@ -534,7 +534,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ className = '' }) => 
                             }
                           }}
                           disabled={!location.latitude || !location.longitude}
-                          className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
                           <Save className="h-3 w-3" />
                           Save Changes

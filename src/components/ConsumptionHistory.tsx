@@ -60,7 +60,8 @@ const ConsumptionHistory: React.FC = () => {
         session.strain_name.toLowerCase().includes(searchLower) ||
         session.location.toLowerCase().includes(searchLower) ||
         session.vessel.toLowerCase().includes(searchLower) ||
-        session.who_with.toLowerCase().includes(searchLower)
+        session.who_with.toLowerCase().includes(searchLower) ||
+        (session.comments?.toLowerCase().includes(searchLower) ?? false)
       );
     }
     return true;
@@ -223,6 +224,11 @@ const ConsumptionHistory: React.FC = () => {
                     <div className="flex items-center gap-2 mb-1">
                       <Cannabis className="h-4 w-4 text-green-600" />
                       <span className="font-medium text-gray-900">{session.strain_name}</span>
+                      {session.strain_type && (
+                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded font-medium">
+                          {session.strain_type}
+                        </span>
+                      )}
                       {typeof session.thc_percentage === 'number' && (
                         <span className="text-sm text-gray-500">({formatThcPercentage(session.thc_percentage)}% THC)</span>
                       )}
@@ -248,6 +254,13 @@ const ConsumptionHistory: React.FC = () => {
                     <div className="mb-2 ml-6">
                       <span className="text-sm font-medium text-gray-700">Accessory: </span>
                       <span className="text-sm text-gray-600">{session.accessory_used}</span>
+                    </div>
+                  )}
+
+                  {session.comments?.trim() && (
+                    <div className="mb-2 ml-6">
+                      <span className="text-sm font-medium text-gray-700">Comments: </span>
+                      <span className="text-sm text-gray-600">{session.comments}</span>
                     </div>
                   )}
 

@@ -30,8 +30,8 @@ import StrainTypeSelector from '@/components/StrainTypeSelector';
 // Dynamic Quantity Input Component
 interface QuantityInputProps {
   vesselCategory: VesselCategory;
-  value: number | FlowerSize;
-  onChange: (value: number | FlowerSize) => void;
+  value: number | FlowerSize | '';
+  onChange: (value: number | FlowerSize | '') => void;
   required?: boolean;
 }
 
@@ -68,8 +68,14 @@ const QuantityInput: React.FC<QuantityInputProps> = ({
       min="0"
       required={required}
       placeholder={'placeholder' in config ? config.placeholder : '0'}
-      value={value as number}
-      onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+      value={typeof value === 'number' ? value : ''}
+      onChange={(e) => {
+        if (e.target.value === '') {
+          onChange('');
+          return;
+        }
+        onChange(parseFloat(e.target.value));
+      }}
       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
     />
   );
@@ -116,7 +122,7 @@ const ConsumptionForm: React.FC = () => {
     kief: false,
     concentrate: false,
     lavender: false,
-    quantity: 1,
+    quantity: '',
     comments: '',
     ...currentSession
   });
@@ -146,7 +152,7 @@ const ConsumptionForm: React.FC = () => {
       
       // Determine the correct quantity value
       // For size_category types, the stored quantity is an index that needs to be converted to FlowerSize string
-      let quantityValue: number | FlowerSize = currentSession.quantity ?? 1;
+      let quantityValue: number | FlowerSize | '' = currentSession.quantity ?? '';
       const vesselCategory = currentSession.vessel_category as VesselCategory;
       if (vesselCategory) {
         const quantityConfig = getQuantityConfig(vesselCategory);
@@ -226,14 +232,9 @@ const ConsumptionForm: React.FC = () => {
       // Reset quantity and accessory to appropriate defaults when vessel category changes
       if (field === 'vessel_category') {
         const newCategory = value as VesselCategory;
-        
-        // Reset quantity based on new category
-        const newQuantityConfig = getQuantityConfig(newCategory);
-        if (newQuantityConfig.type === 'size_category' && newQuantityConfig.options) {
-          newData.quantity = newQuantityConfig.options[0] as FlowerSize;
-        } else {
-          newData.quantity = newQuantityConfig.placeholder ? parseFloat(newQuantityConfig.placeholder) : 0;
-        }
+
+        // Keep quantity blank when switching categories so user can enter/select it explicitly
+        newData.quantity = '';
         
         // Reset accessory based on new category
         const newAccessoryConfig = getAccessoryConfig(newCategory);
@@ -274,6 +275,11 @@ const ConsumptionForm: React.FC = () => {
     e.preventDefault();
 
     try {
+      if (formData.quantity === '') {
+        alert('Please enter a quantity before saving.');
+        return;
+      }
+
       // Convert form data to session data with proper quantity format
       const sessionData = {
         ...formData,
@@ -349,7 +355,7 @@ const ConsumptionForm: React.FC = () => {
           kief: false,
           concentrate: false,
           lavender: false,
-          quantity: 1,
+          quantity: '',
           comments: ''
         });
 
@@ -404,7 +410,7 @@ const ConsumptionForm: React.FC = () => {
                 kief: false,
                 concentrate: false,
                 lavender: false,
-                quantity: 1,
+                quantity: '',
                 comments: ''
               });
             }}
@@ -809,7 +815,7 @@ const ConsumptionForm: React.FC = () => {
         onClose={() => setShowLastSession(false)}
         onApply={(session) => {
           // Convert QuantityValue to form quantity (number | FlowerSize)
-          let quantityValue: number | FlowerSize = 1;
+          let quantityValue: number | FlowerSize | '' = '';
           if (session.quantity) {
             const vesselCategory = session.vessel_category as VesselCategory;
             const quantityConfig = vesselCategory ? getQuantityConfig(vesselCategory) : null;

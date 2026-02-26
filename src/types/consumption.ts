@@ -227,7 +227,7 @@ export const migrateLegacyQuantity = (vesselCategory: VesselCategory, legacyQuan
 // Form state for consumption logging (with simplified quantity input)
 export interface ConsumptionFormData extends Omit<CreateConsumptionSession, 'quantity'> {
   // Simplified quantity input - will be converted to QuantityValue on submit
-  quantity: number | FlowerSize;
+  quantity: number | FlowerSize | '';
   // Optional id for edit mode (set when editing an existing session)
   id?: string;
 }

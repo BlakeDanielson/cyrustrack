@@ -258,7 +258,7 @@ const ConsumptionForm: React.FC = () => {
 
       // Re-populate known strain metadata from the most recent matching session.
       if (field === 'strain_name' && typeof value === 'string') {
-        const autofill = getLatestStrainAutofill(value, sessions);
+        const autofill = getLatestStrainAutofill(value, sessions, newData.vessel);
         if (autofill) {
           newData.strain_type = autofill.strain_type;
           newData.thc_percentage = autofill.thc_percentage;
@@ -596,6 +596,7 @@ const ConsumptionForm: React.FC = () => {
             </label>
             <StrainSelector
               value={formData.strain_name}
+              vessel={formData.vessel}
               onChange={(value) => handleInputChange('strain_name', value)}
               placeholder="Select or type strain name..."
               required

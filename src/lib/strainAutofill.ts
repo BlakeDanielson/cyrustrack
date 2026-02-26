@@ -9,15 +9,19 @@ export interface StrainAutofillValues {
 
 export function getLatestStrainAutofill(
   strainName: string,
-  sessions: ConsumptionSession[]
+  sessions: ConsumptionSession[],
+  vessel?: string
 ): StrainAutofillValues | null {
   const normalizedStrain = strainName.trim().toLowerCase();
+  const normalizedVessel = vessel?.trim().toLowerCase();
   if (!normalizedStrain) {
     return null;
   }
 
   const matchingSessions = sessions.filter(
-    (session) => session.strain_name.trim().toLowerCase() === normalizedStrain
+    (session) =>
+      session.strain_name.trim().toLowerCase() === normalizedStrain &&
+      (!normalizedVessel || session.vessel.trim().toLowerCase() === normalizedVessel)
   );
   if (matchingSessions.length === 0) {
     return null;

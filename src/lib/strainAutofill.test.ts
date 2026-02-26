@@ -104,3 +104,51 @@ test('returns metadata from the most recent matching session', () => {
     state_purchased: '',
   });
 });
+
+test('scopes autofill metadata to matching vessel when provided', () => {
+  const sessions = [
+    createSession({
+      id: 'pipe-session',
+      strain_name: 'Blue Dream',
+      vessel: 'Sherlock',
+      strain_type: 'Sativa',
+      thc_percentage: 22.1,
+      purchased_legally: true,
+      state_purchased: 'OR',
+      created_at: '2026-02-02T10:00:00.000Z',
+      updated_at: '2026-02-02T10:00:00.000Z',
+    }),
+    createSession({
+      id: 'bong-session',
+      strain_name: 'Blue Dream',
+      vessel: 'Beaker',
+      strain_type: 'Hybrid',
+      thc_percentage: 27.3,
+      purchased_legally: false,
+      state_purchased: '',
+      created_at: '2026-02-10T10:00:00.000Z',
+      updated_at: '2026-02-10T10:00:00.000Z',
+    }),
+  ];
+
+  const result = getLatestStrainAutofill('Blue Dream', sessions, 'Sherlock');
+  assert.deepEqual(result, {
+    strain_type: 'Sativa',
+    thc_percentage: 22.1,
+    purchased_legally: true,
+    state_purchased: 'OR',
+  });
+});
+
+test('returns null when strain exists but not for selected vessel', () => {
+  const sessions = [
+    createSession({
+      strain_name: 'Runtz',
+      vessel: 'Bubbler',
+      strain_type: 'Hybrid',
+    }),
+  ];
+
+  const result = getLatestStrainAutofill('Runtz', sessions, 'Joint');
+  assert.equal(result, null);
+});

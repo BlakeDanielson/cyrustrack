@@ -13,10 +13,21 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const searchQuery = normalizeForSearch(searchParams.get('q') || '');
+    const vesselFilter = (searchParams.get('vessel') || '').trim();
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
     // Get all sessions with strain names, ordered by most recent first
     const sessions = await prisma.consumptionSession.findMany({
+      ...(vesselFilter
+        ? {
+            where: {
+              vessel: {
+                equals: vesselFilter,
+                mode: 'insensitive',
+              },
+            },
+          }
+        : {}),
       select: { 
         strain_name: true,
         created_at: true

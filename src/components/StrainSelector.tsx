@@ -12,6 +12,7 @@ interface StrainEntry {
 interface StrainSelectorProps {
   value: string;
   onChange: (value: string) => void;
+  vessel?: string;
   placeholder?: string;
   className?: string;
   required?: boolean;
@@ -22,6 +23,7 @@ const normalizeForSearch = (value: string) => value.toLowerCase().replace(/\s+/g
 const StrainSelector: React.FC<StrainSelectorProps> = ({
   value,
   onChange,
+  vessel = '',
   placeholder = 'Select or type strain name...',
   className = "",
   required = false
@@ -35,13 +37,19 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
   
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const vesselQuery = vessel.trim();
+  const hasVesselFilter = vesselQuery.length > 0;
 
   // Fetch recent strain names on component mount
   useEffect(() => {
     const fetchStrains = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/sessions/strains?limit=10');
+        const params = new URLSearchParams({ limit: '10' });
+        if (hasVesselFilter) {
+          params.set('vessel', vesselQuery);
+        }
+        const response = await fetch(`/api/sessions/strains?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           setRecentStrains(data.strains || []);
@@ -53,7 +61,7 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
       }
     };
     fetchStrains();
-  }, []);
+  }, [hasVesselFilter, vesselQuery]);
 
   // Query strains from dataset when the search term reaches minimum length
   useEffect(() => {
@@ -68,10 +76,16 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
     const timeoutId = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/sessions/strains?q=${encodeURIComponent(query)}&limit=100`,
-          { signal: controller.signal }
-        );
+        const params = new URLSearchParams({
+          q: query,
+          limit: '100',
+        });
+        if (hasVesselFilter) {
+          params.set('vessel', vesselQuery);
+        }
+        const response = await fetch(`/api/sessions/strains?${params.toString()}`, {
+          signal: controller.signal,
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch strain search results');
         }
@@ -94,7 +108,7 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [searchTerm, MIN_SEARCH_LENGTH]);
+  }, [searchTerm, MIN_SEARCH_LENGTH, hasVesselFilter, vesselQuery]);
 
   // Show recent strains when not searching, otherwise show API search results
   const filteredStrains = useMemo(() => {
@@ -260,6 +274,11 @@ const StrainSelector: React.FC<StrainSelectorProps> = ({
               <Clock className="h-3 w-3" />
               <span>{isSearchMode ? 'Search results' : 'Recent strains'}</span>
             </div>
+            {hasVesselFilter && (
+              <div className="mt-1 text-xs text-gray-500 truncate">
+                Filtered by vessel: {vesselQuery}
+              </div>
+            )}
           </div>
 
           <div className="overflow-y-auto max-h-56">

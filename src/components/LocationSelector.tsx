@@ -22,6 +22,7 @@ interface Location {
 interface SessionMapPoint {
   id: string;
   name: string;
+  nickname?: string;
   latitude?: number;
   longitude?: number;
   usage_count?: number;
@@ -83,7 +84,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     fetchExistingLocations();
   }, []);
 
+  const getRoundedCoordinateKey = (lat: number, lng: number) => {
+    const roundedLat = Math.round(lat * 1000) / 1000;
+    const roundedLng = Math.round(lng * 1000) / 1000;
+    return `${roundedLat},${roundedLng}`;
+  };
+
   // Pull full historical session coordinate points so map matches analytics coverage.
+  // Prefer displaying saved location names/nicknames when coordinates match.
   useEffect(() => {
     const fetchHistoricalMapPoints = async () => {
       try {
@@ -93,6 +101,23 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         }
         const data = await response.json();
         const sessions = Array.isArray(data.sessions) ? data.sessions : [];
+
+        const savedLocationByCoordinateKey = new Map<string, Location>();
+        for (const location of existingLocations) {
+          if (
+            typeof location.latitude !== 'number' ||
+            typeof location.longitude !== 'number' ||
+            Number.isNaN(location.latitude) ||
+            Number.isNaN(location.longitude)
+          ) {
+            continue;
+          }
+          const coordinateKey = getRoundedCoordinateKey(location.latitude, location.longitude);
+          const existingMatch = savedLocationByCoordinateKey.get(coordinateKey);
+          if (!existingMatch || location.usage_count > existingMatch.usage_count) {
+            savedLocationByCoordinateKey.set(coordinateKey, location);
+          }
+        }
 
         const groupedPoints = new Map<string, SessionMapPoint>();
 
@@ -114,9 +139,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           if (existingPoint) {
             existingPoint.usage_count = (existingPoint.usage_count || 0) + 1;
           } else {
+            const savedLocation = savedLocationByCoordinateKey.get(
+              getRoundedCoordinateKey(session.latitude, session.longitude)
+            );
             groupedPoints.set(key, {
               id: `session-point-${key}`,
-              name: session.location || 'Past session location',
+              name: savedLocation?.name || session.location || 'Past session location',
+              nickname: savedLocation?.nickname,
               latitude: roundedLat,
               longitude: roundedLng,
               usage_count: 1,
@@ -133,7 +162,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     };
 
     fetchHistoricalMapPoints();
-  }, []);
+  }, [existingLocations]);
 
   // Search locations when search term changes
   useEffect(() => {

@@ -4,10 +4,9 @@ import React, { useMemo, useState, useCallback } from 'react';
 // react-map-gl v8 uses export subpaths; use the Mapbox-specific entry
 import ReactMap, { Marker, Popup } from 'react-map-gl/mapbox-legacy';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { ConsumptionSession } from '@/types/consumption';
+import { ConsumptionSession, formatQuantity, formatThcPercentage } from '@/types/consumption';
 import { format } from 'date-fns';
 import { MapPin, Cannabis, Calendar, Users, Beaker } from 'lucide-react';
-import { formatQuantity } from '@/types/consumption';
 
 interface SessionMapProps {
   sessions: ConsumptionSession[];
@@ -257,7 +256,7 @@ const SessionMap: React.FC<SessionMapProps> = ({
                   </h3>
                   <p className="text-xs text-gray-600 capitalize">
                     {popupInfo.session.vessel} • {formatQuantity(popupInfo.session.quantity)}
-                    {popupInfo.session.thc_percentage && ` • THC: ${popupInfo.session.thc_percentage}%`}
+                    {typeof popupInfo.session.thc_percentage === 'number' && ` • THC: ${formatThcPercentage(popupInfo.session.thc_percentage)}%`}
                   </p>
                 </div>
               </div>

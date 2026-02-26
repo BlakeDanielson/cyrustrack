@@ -210,6 +210,13 @@ export const formatQuantity = (quantity: QuantityValue): string => {
   return `${quantity.amount} ${quantity.unit}`;
 };
 
+export const formatThcPercentage = (thcPercentage?: number): string => {
+  if (typeof thcPercentage !== 'number' || Number.isNaN(thcPercentage)) {
+    return '0.00';
+  }
+  return thcPercentage.toFixed(2);
+};
+
 // Migration helper
 export const migrateLegacyQuantity = (vesselCategory: VesselCategory, legacyQuantity: number): QuantityValue => {
   return createQuantityValue(vesselCategory, legacyQuantity);

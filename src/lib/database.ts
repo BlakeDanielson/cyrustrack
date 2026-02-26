@@ -7,6 +7,13 @@ type SessionWithLocation = Prisma.ConsumptionSessionGetPayload<{
   include: { location_ref: true }
 }>;
 
+const roundToTwoDecimals = (value?: number): number | undefined => {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return undefined;
+  }
+  return Math.round(value * 100) / 100;
+};
+
 // Convert Prisma model to our app type
 function convertPrismaToSession(prismaSession: SessionWithLocation): ConsumptionSession {
   // Convert location_ref if available
@@ -212,7 +219,7 @@ async function convertSessionToPrismaInput(session: CreateConsumptionSession & {
     my_substance: session.my_substance,
     strain_name: session.strain_name,
     strain_type: session.strain_type,
-    thc_percentage: session.thc_percentage,
+    thc_percentage: roundToTwoDecimals(session.thc_percentage),
     purchased_legally: session.purchased_legally,
     state_purchased: session.state_purchased,
     tobacco: session.tobacco,
@@ -303,7 +310,7 @@ export const databaseService = {
       if (updates.my_substance !== undefined) updateData.my_substance = updates.my_substance;
       if (updates.strain_name !== undefined) updateData.strain_name = updates.strain_name;
       if (updates.strain_type !== undefined) updateData.strain_type = updates.strain_type;
-      if (updates.thc_percentage !== undefined) updateData.thc_percentage = updates.thc_percentage;
+      if (updates.thc_percentage !== undefined) updateData.thc_percentage = roundToTwoDecimals(updates.thc_percentage);
       if (updates.purchased_legally !== undefined) updateData.purchased_legally = updates.purchased_legally;
       if (updates.state_purchased !== undefined) updateData.state_purchased = updates.state_purchased;
       if (updates.tobacco !== undefined) updateData.tobacco = updates.tobacco;

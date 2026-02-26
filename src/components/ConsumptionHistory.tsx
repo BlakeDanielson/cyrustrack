@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { History, MapPin, Cannabis, Filter, Search, Trash2, Pencil } from 'lucide-react';
 import { useConsumptionStore } from '@/store/consumption';
-import { ConsumptionSession, formatQuantity } from '@/types/consumption';
+import { ConsumptionSession, formatQuantity, formatThcPercentage } from '@/types/consumption';
 import { cn } from '@/lib/utils';
 
 const ConsumptionHistory: React.FC = () => {
@@ -223,8 +223,8 @@ const ConsumptionHistory: React.FC = () => {
                     <div className="flex items-center gap-2 mb-1">
                       <Cannabis className="h-4 w-4 text-green-600" />
                       <span className="font-medium text-gray-900">{session.strain_name}</span>
-                      {session.thc_percentage && (
-                        <span className="text-sm text-gray-500">({session.thc_percentage}% THC)</span>
+                      {typeof session.thc_percentage === 'number' && (
+                        <span className="text-sm text-gray-500">({formatThcPercentage(session.thc_percentage)}% THC)</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 ml-6">

@@ -12,7 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { Leaf, FlaskConical, Percent, Package } from 'lucide-react';
-import { ConsumptionSession } from '@/types/consumption';
+import { ConsumptionSession, formatThcPercentage } from '@/types/consumption';
 // import { AnalyticsService } from '@/lib/analytics'; // Commented out as currently unused
 
 interface StrainAnalyticsProps {
@@ -57,7 +57,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
     const withTHC = sessions.filter(s => typeof s.thc_percentage === 'number');
     if (withTHC.length === 0) return 0;
     const total = withTHC.reduce((sum, s) => sum + (s.thc_percentage || 0), 0);
-    return Math.round((total / withTHC.length) * 10) / 10;
+    return total / withTHC.length;
   }, [sessions]);
 
   // Product modifiers stats
@@ -116,7 +116,7 @@ const StrainAnalytics: React.FC<StrainAnalyticsProps> = ({ sessions }) => {
           <FlaskConical className="h-6 w-6 text-purple-600" />
           <div>
             <p className="text-sm text-gray-600">Avg THC Preference</p>
-            <p className="text-xl font-bold text-gray-900">{avgTHC}%</p>
+            <p className="text-xl font-bold text-gray-900">{formatThcPercentage(avgTHC)}%</p>
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">

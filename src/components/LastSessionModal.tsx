@@ -3,7 +3,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { X, MapPin, Clock, Calendar, Cannabis, Copy } from 'lucide-react';
-import { ConsumptionSession, formatQuantity } from '@/types/consumption';
+import { ConsumptionSession, formatQuantity, formatThcPercentage } from '@/types/consumption';
 
 interface LastSessionModalProps {
   isOpen: boolean;
@@ -48,10 +48,10 @@ export default function LastSessionModal({ isOpen, onClose, onApply, session }: 
               <span className="capitalize">{session.vessel}</span>
               <span>•</span>
               <span>{formatQuantity(session.quantity)}</span>
-              {session.thc_percentage && (
+              {typeof session.thc_percentage === 'number' && (
                 <>
                   <span>•</span>
-                  <span>THC: {session.thc_percentage}%</span>
+                  <span>THC: {formatThcPercentage(session.thc_percentage)}%</span>
                 </>
               )}
             </div>

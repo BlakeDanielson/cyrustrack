@@ -611,11 +611,22 @@ const ConsumptionForm: React.FC = () => {
             </label>
             <input
               type="number"
-              step="0.1"
+              step="0.01"
               min="0"
               max="100"
-              value={formData.thc_percentage || ''}
-              onChange={(e) => handleInputChange('thc_percentage', parseFloat(e.target.value) || undefined)}
+              value={formData.thc_percentage ?? ''}
+              onChange={(e) => {
+                if (e.target.value === '') {
+                  handleInputChange('thc_percentage', undefined);
+                  return;
+                }
+
+                const parsedValue = Number(e.target.value);
+                handleInputChange(
+                  'thc_percentage',
+                  Number.isNaN(parsedValue) ? undefined : parsedValue
+                );
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>

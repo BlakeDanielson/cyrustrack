@@ -45,6 +45,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [newLocationAddress, setNewLocationAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isEditingSession = Boolean(locationId);
 
   // Fetch existing locations on component mount
   useEffect(() => {
@@ -144,11 +145,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   useEffect(() => {
     if (locationId) {
       setSelectedLocationId(locationId);
-      if (mode !== 'existing') {
-        setMode('existing');
-      }
+      setMode('existing');
     }
-  }, [locationId, mode]);
+  }, [locationId]);
 
   // When editing, try to find and select the matching location from the value prop
   useEffect(() => {
@@ -181,6 +180,11 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     setNewLocationCoordinates(coordinates);
     const displayName = newLocationName.trim() || location;
     onLocationSelect(displayName, coordinates);
+  };
+
+  const handleSwitchToNewLocationMode = () => {
+    setMode('new');
+    setSelectedLocationId(null);
   };
 
   const formatLastUsed = (dateString?: string) => {
@@ -230,7 +234,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => setMode('new')}
+          onClick={handleSwitchToNewLocationMode}
           className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
             mode === 'new'
               ? 'bg-white text-gray-900 shadow-sm'
@@ -343,6 +347,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       {/* New Location Selection - Map First Experience */}
       {mode === 'new' && (
         <div className="space-y-4">
+          {isEditingSession && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+              <p className="text-sm text-blue-800">
+                Adding a new location here will update this session to the newly selected place.
+              </p>
+            </div>
+          )}
           <MapLocationPicker
             onLocationSelect={(location, coordinates) => {
               handleNewLocationSelect(location, coordinates);

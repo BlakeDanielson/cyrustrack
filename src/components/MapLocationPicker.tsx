@@ -8,8 +8,18 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 interface MapLocationPickerProps {
   onLocationSelect: (location: string, coordinates: { lat: number; lng: number }) => void;
+  historicalLocations?: HistoricalLocation[];
   className?: string;
   height?: string;
+}
+
+interface HistoricalLocation {
+  id: string;
+  name: string;
+  nickname?: string;
+  latitude?: number;
+  longitude?: number;
+  usage_count?: number;
 }
 
 interface ViewState {
@@ -20,6 +30,7 @@ interface ViewState {
 
 const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   onLocationSelect,
+  historicalLocations = [],
   className = "",
   height = "350px"
 }) => {
@@ -42,6 +53,13 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  const historicalMarkers = historicalLocations.filter(
+    (location) =>
+      typeof location.latitude === 'number' &&
+      typeof location.longitude === 'number' &&
+      !Number.isNaN(location.latitude) &&
+      !Number.isNaN(location.longitude)
+  );
 
   // Request user's geolocation on mount
   useEffect(() => {
@@ -113,6 +131,12 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   // Handle marker drag end
   const handleMarkerDragEnd = useCallback((event: { lngLat: { lat: number; lng: number } }) => {
     const { lat, lng } = event.lngLat;
+    setPinLocation({ lat, lng });
+    performReverseGeocode(lat, lng);
+  }, [performReverseGeocode]);
+
+  // Clicking a historical marker drops the active pin there
+  const handleHistoricalMarkerClick = useCallback((lat: number, lng: number) => {
     setPinLocation({ lat, lng });
     performReverseGeocode(lat, lng);
   }, [performReverseGeocode]);
@@ -192,6 +216,11 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           Use My Location
         </button>
       </div>
+      {historicalMarkers.length > 0 && (
+        <p className="text-xs text-gray-500">
+          Historical locations are shown as blue dots.
+        </p>
+      )}
 
       {/* Location Error */}
       {locationError && !pinLocation && (
@@ -226,6 +255,26 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           attributionControl={false}
           cursor={pinLocation ? 'default' : 'crosshair'}
         >
+          {/* Existing/historical locations for visual context */}
+          {mapLoaded && historicalMarkers.map((location) => (
+            <Marker
+              key={location.id}
+              latitude={location.latitude as number}
+              longitude={location.longitude as number}
+              anchor="center"
+            >
+              <button
+                type="button"
+                title={`${location.nickname || location.name}${location.usage_count ? ` (${location.usage_count} sessions)` : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleHistoricalMarkerClick(location.latitude as number, location.longitude as number);
+                }}
+                className="h-3 w-3 rounded-full bg-blue-500 border border-white shadow-sm opacity-90 hover:scale-125 transition-transform cursor-pointer"
+              />
+            </Marker>
+          ))}
+
           {/* Navigation Controls */}
           <NavigationControl position="top-right" />
           

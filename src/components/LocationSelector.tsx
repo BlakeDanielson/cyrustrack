@@ -358,6 +358,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             onLocationSelect={(location, coordinates) => {
               handleNewLocationSelect(location, coordinates);
             }}
+            historicalLocations={existingLocations}
             height="320px"
           />
 

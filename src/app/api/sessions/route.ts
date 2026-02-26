@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     const requiredFields = ['date', 'time', 'location', 'vessel_category', 'vessel', 'strain_name', 'quantity'];
     const missingFields = requiredFields.filter(field => !body[field]);
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H3',location:'src/app/api/sessions/route.ts:51',message:'POST sessions required-field validation',data:{requiredFields,missingFields,quantity:body.quantity,quantityType:typeof body.quantity,my_vessel:body.my_vessel,my_substance:body.my_substance,purchased_legally:body.purchased_legally},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     
     if (missingFields.length > 0) {
       return NextResponse.json(

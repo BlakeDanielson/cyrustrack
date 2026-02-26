@@ -15,6 +15,7 @@ import {
   FLOWER_SIZES
 } from '@/types/consumption';
 import { cn } from '@/lib/utils';
+import { getLatestStrainAutofill } from '@/lib/strainAutofill';
 import SuccessNotification from '@/components/ui/SuccessNotification';
 import LocationSelector from '@/components/LocationSelector';
 import ImageUpload from '@/components/ImageUpload';
@@ -256,15 +257,12 @@ const ConsumptionForm: React.FC = () => {
 
       // Re-populate known strain metadata from the most recent matching session.
       if (field === 'strain_name' && typeof value === 'string') {
-        const normalizedStrain = value.trim().toLowerCase();
-        if (normalizedStrain) {
-          const recentMatch = sessions.find(
-            (session) => session.strain_name.trim().toLowerCase() === normalizedStrain
-          );
-          if (recentMatch) {
-            newData.strain_type = recentMatch.strain_type || '';
-            newData.thc_percentage = recentMatch.thc_percentage ?? undefined;
-          }
+        const autofill = getLatestStrainAutofill(value, sessions);
+        if (autofill) {
+          newData.strain_type = autofill.strain_type;
+          newData.thc_percentage = autofill.thc_percentage;
+          newData.purchased_legally = autofill.purchased_legally;
+          newData.state_purchased = autofill.state_purchased;
         }
       }
 
@@ -283,6 +281,9 @@ const ConsumptionForm: React.FC = () => {
         // Include selected location ID if using existing location
         ...(selectedLocationId && { selectedLocationId })
       };
+      // #region agent log
+      fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H4',location:'src/components/ConsumptionForm.tsx:286',message:'Submit started with derived session data',data:{isEditMode,editingSessionId:selectedLocationId ? editingSessionId : editingSessionId,selectedLocationId,uploadedImagesCount:uploadedImages.length,uploadedImageSessionIds:uploadedImages.map((img)=>img.session_id)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
 
       let savedSessionId: string | undefined;
 
@@ -298,12 +299,21 @@ const ConsumptionForm: React.FC = () => {
         // If we have uploaded images, link them to the new session
         if (uploadedImages.length > 0 && savedSessionId) {
           try {
+            // #region agent log
+            fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:303',message:'Starting image link loop',data:{savedSessionId,uploadedImagesCount:uploadedImages.length,uploadedImageSessionIds:uploadedImages.map((img)=>img.session_id)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             // Link all temporary images to the actual session
             for (const image of uploadedImages) {
+              // #region agent log
+              fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:307',message:'Evaluating uploaded image for temp-session linking',data:{imageId:image.id,imageSessionId:image.session_id,eligibleForLink:image.session_id.startsWith('temp_')},timestamp:Date.now()})}).catch(()=>{});
+              // #endregion
               if (image.session_id.startsWith('temp_')) {
-                await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${savedSessionId}`, {
+                const linkResponse = await fetch(`/api/images/upload?tempSessionId=${image.session_id}&actualSessionId=${savedSessionId}`, {
                   method: 'PATCH',
                 });
+                // #region agent log
+                fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H1',location:'src/components/ConsumptionForm.tsx:312',message:'Image link API completed',data:{imageId:image.id,imageSessionId:image.session_id,status:linkResponse.status,ok:linkResponse.ok},timestamp:Date.now()})}).catch(()=>{});
+                // #endregion
               }
             }
           } catch (error) {
@@ -801,32 +811,37 @@ const ConsumptionForm: React.FC = () => {
           }
           
           // Apply last session data to the form (including date/time for easier past entry logging)
-          setFormData(prev => ({
-            ...prev,
-            // Copy date and time from last session
-            date: session.date || prev.date,
-            time: session.time || prev.time,
-            // Apply session data
-            location: session.location || '',
-            who_with: session.who_with || '',
-            vessel_category: session.vessel_category || '',
-            vessel: session.vessel || '',
-            accessory_used: session.accessory_used || 'N/A',
-            my_vessel: session.my_vessel ?? true,
-            my_substance: session.my_substance ?? true,
-            strain_name: session.strain_name || '',
-            strain_type: session.strain_type || '',
-            thc_percentage: session.thc_percentage ?? undefined,
-            purchased_legally: session.purchased_legally ?? true,
-            state_purchased: session.state_purchased || '',
-            tobacco: session.tobacco || undefined,
-            kief: session.kief ?? false,
-            concentrate: session.concentrate ?? false,
-            lavender: session.lavender ?? false,
-            quantity: quantityValue,
-            comment: '', // Don't copy the comment
-            images: [], // Don't copy images
-          }));
+          setFormData(prev => {
+            const appliedFormData = {
+              // Copy date and time from last session
+              date: session.date || prev.date,
+              time: session.time || prev.time,
+              // Apply session data
+              location: session.location || '',
+              who_with: session.who_with || '',
+              vessel_category: session.vessel_category || '',
+              vessel: session.vessel || '',
+              accessory_used: session.accessory_used || 'N/A',
+              my_vessel: session.my_vessel ?? true,
+              my_substance: session.my_substance ?? true,
+              strain_name: session.strain_name || '',
+              strain_type: session.strain_type || '',
+              thc_percentage: session.thc_percentage ?? undefined,
+              purchased_legally: session.purchased_legally ?? true,
+              state_purchased: session.state_purchased || '',
+              tobacco: session.tobacco || undefined,
+              kief: session.kief ?? false,
+              concentrate: session.concentrate ?? false,
+              lavender: session.lavender ?? false,
+              quantity: quantityValue,
+              comment: '', // Don't copy the comment
+              images: [], // Don't copy images
+            };
+            // #region agent log
+            fetch('http://127.0.0.1:7243/ingest/3931dac6-182e-4a91-bd6e-d62afaa24791',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac4157'},body:JSON.stringify({sessionId:'ac4157',runId:'initial',hypothesisId:'H2',location:'src/components/ConsumptionForm.tsx:843',message:'Applying last session values',data:{sessionId:session.id,hasCommentField:Object.prototype.hasOwnProperty.call(appliedFormData,'comment'),hasCommentsField:Object.prototype.hasOwnProperty.call(appliedFormData,'comments'),incomingComment:session.comments},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+            return { ...prev, ...appliedFormData };
+          });
           // Reset pre-population ref since we're manually applying values
           hasPrePopulatedStrain.current = true;
         }}

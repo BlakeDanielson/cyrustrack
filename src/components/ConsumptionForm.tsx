@@ -258,12 +258,20 @@ const ConsumptionForm: React.FC = () => {
 
       // Re-populate known strain metadata from the most recent matching session.
       if (field === 'strain_name' && typeof value === 'string') {
-        const autofill = getLatestStrainAutofill(value, sessions, newData.vessel);
-        if (autofill) {
-          newData.strain_type = autofill.strain_type;
-          newData.thc_percentage = autofill.thc_percentage;
-          newData.purchased_legally = autofill.purchased_legally;
-          newData.state_purchased = autofill.state_purchased;
+        if (!value.trim()) {
+          // Clearing strain name should also clear strain-specific metadata.
+          newData.strain_type = '';
+          newData.thc_percentage = undefined;
+          newData.purchased_legally = true;
+          newData.state_purchased = '';
+        } else {
+          const autofill = getLatestStrainAutofill(value, sessions, newData.vessel);
+          if (autofill) {
+            newData.strain_type = autofill.strain_type;
+            newData.thc_percentage = autofill.thc_percentage;
+            newData.purchased_legally = autofill.purchased_legally;
+            newData.state_purchased = autofill.state_purchased;
+          }
         }
       }
 
